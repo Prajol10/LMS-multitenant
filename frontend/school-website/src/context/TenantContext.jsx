@@ -18,20 +18,29 @@ export const TenantProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Extract subdomain from hostname
-  const getSubdomain = () => {
-    const hostname = window.location.hostname;
-    
+  // Extract tenant identifier from URL query parameter or subdomain
+  const getTenantIdentifier = () => {
+    // First check query parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const schoolParam = urlParams.get('school');
+    if (schoolParam) {
+      return schoolParam;
+    }
+
     // For localhost testing
+    const hostname = window.location.hostname;
     if (hostname === 'localhost') {
       return 'ratobangala'; // Default to ratobangala for local development
     }
-    
-    // For production domains like subdomain.edunepal.com
-    if (hostname.endsWith('.edunepal.com')) {
-      return hostname.replace('.edunepal.com', '');
+
+    // For production domains like subdomain.netlify.app
+    if (hostname.endsWith('.netlify.app')) {
+      const parts = hostname.split('.');
+      if (parts.length >= 3) {
+        return parts[0]; // subdomain part
+      }
     }
-    
+
     return null;
   };
 
@@ -39,22 +48,22 @@ export const TenantProvider = ({ children }) => {
   const loadTenantData = async () => {
     try {
       setLoading(true);
-      const subdomain = getSubdomain();
+      const tenantIdentifier = getTenantIdentifier();
       
-      if (!subdomain) {
-        throw new Error('No subdomain found');
+      if (!tenantIdentifier) {
+        throw new Error('No school identifier found in URL');
       }
 
       // Fetch tenant data
-      const tenantData = await ApiService.getSchoolBySubdomain(subdomain);
+      const tenantData = await ApiService.getSchoolByTenant(tenantIdentifier);
       setTenant(tenantData);
 
       // Fetch notices
-      const noticesData = await ApiService.getNoticesBySubdomain(subdomain);
+      const noticesData = await ApiService.getNoticesByTenant(tenantIdentifier);
       setNotices(noticesData);
 
       // Fetch gallery
-      const galleryData = await ApiService.getGalleryBySubdomain(subdomain);
+      const galleryData = await ApiService.getGalleryByTenant(tenantIdentifier);
       setGallery(galleryData);
     } catch (err) {
       console.error('Error loading tenant data:', err);

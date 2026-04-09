@@ -1,10 +1,10 @@
-const API_BASE_URL = 'http://localhost:5071/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5071/api';
 
 class ApiService {
-  // Get school info by subdomain
-  static async getSchoolBySubdomain(subdomain) {
+  // Get school info by subdomain or ID
+  static async getSchoolByTenant(tenantIdentifier) {
     try {
-      const response = await fetch(`${API_BASE_URL}/school/${subdomain}`);
+      const response = await fetch(`${API_BASE_URL}/school/${tenantIdentifier}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -15,10 +15,10 @@ class ApiService {
     }
   }
 
-  // Get notices by subdomain
-  static async getNoticesBySubdomain(subdomain) {
+  // Get notices by subdomain or ID
+  static async getNoticesByTenant(tenantIdentifier) {
     try {
-      const response = await fetch(`${API_BASE_URL}/school/${subdomain}/notices`);
+      const response = await fetch(`${API_BASE_URL}/school/${tenantIdentifier}/notices`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -29,10 +29,10 @@ class ApiService {
     }
   }
 
-  // Get gallery images by subdomain
-  static async getGalleryBySubdomain(subdomain) {
+  // Get gallery images by subdomain or ID
+  static async getGalleryByTenant(tenantIdentifier) {
     try {
-      const response = await fetch(`${API_BASE_URL}/school/${subdomain}/gallery`);
+      const response = await fetch(`${API_BASE_URL}/school/${tenantIdentifier}/gallery`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

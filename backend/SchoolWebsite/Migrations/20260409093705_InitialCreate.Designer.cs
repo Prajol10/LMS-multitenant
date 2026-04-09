@@ -12,7 +12,7 @@ using SchoolWebsite.Data;
 namespace SchoolWebsite.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260407074243_InitialCreate")]
+    [Migration("20260409093705_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
