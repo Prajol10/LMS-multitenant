@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: school-website-api
+    env: dotnet
+    plan: free
+    buildCommand: cd backend/SchoolWebsite && dotnet publish -c Release -o out
+    startCommand: cd backend/SchoolWebsite/out && dotnet SchoolWebsite.dll
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: Jwt__Key
+        sync: false
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
