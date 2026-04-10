@@ -4,6 +4,13 @@ using SchoolWebsite.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Disable file watcher for production (fixes Render free tier inotify limit)
+builder.Configuration.Sources.Clear();
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false)
+    .AddEnvironmentVariables();
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
