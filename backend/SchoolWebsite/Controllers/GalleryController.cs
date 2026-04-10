@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolWebsite.Data;
@@ -17,49 +18,21 @@ namespace SchoolWebsite.Controllers
             _context = context;
         }
 
-        // GET: api/school/{subdomain}/gallery
-        [HttpGet("/api/school/{subdomain}/gallery")]
-        public async Task<ActionResult<IEnumerable<GalleryImageDto>>> GetGalleryBySchool(string subdomain)
+        // POST: api/gallery
+        [HttpPost]
+        [Authorize]
+        public async Task<ActionResult<GalleryImageDto>> CreateGalleryImage(CreateGalleryImageDto createGalleryDto)
         {
-            var tenant = await _context.Tenants
-                .FirstOrDefaultAsync(t => t.Subdomain.ToLower() == subdomain.ToLower() && t.IsActive);
-
-            if (tenant == null)
+            // Get tenantId from claims
+            var tenantIdClaim = User.FindFirst("TenantId")?.Value;
+            if (string.IsNullOrEmpty(tenantIdClaim) || !int.TryParse(tenantIdClaim, out int tenantId))
             {
-                return NotFound("School not found");
-            }
-
-            var galleryImages = await _context.GalleryImages
-                .Where(g => g.TenantId == tenant.Id)
-                .OrderByDescending(g => g.CreatedAt)
-                .ToListAsync();
-
-            var galleryDtos = galleryImages.Select(g => new GalleryImageDto
-            {
-                Id = g.Id,
-                ImageUrl = g.ImageUrl,
-                Caption = g.Caption,
-                CreatedAt = g.CreatedAt
-            }).ToList();
-
-            return Ok(galleryDtos);
-        }
-
-        // POST: api/school/{subdomain}/gallery
-        [HttpPost("/api/school/{subdomain}/gallery")]
-        public async Task<ActionResult<GalleryImageDto>> CreateGalleryImage(string subdomain, CreateGalleryImageDto createGalleryDto)
-        {
-            var tenant = await _context.Tenants
-                .FirstOrDefaultAsync(t => t.Subdomain.ToLower() == subdomain.ToLower() && t.IsActive);
-
-            if (tenant == null)
-            {
-                return NotFound("School not found");
+                return Unauthorized("Invalid tenant");
             }
 
             var galleryImage = new GalleryImage
             {
-                TenantId = tenant.Id,
+                TenantId = tenantId,
                 ImageUrl = createGalleryDto.ImageUrl,
                 Caption = createGalleryDto.Caption
             };
@@ -75,7 +48,57 @@ namespace SchoolWebsite.Controllers
                 CreatedAt = galleryImage.CreatedAt
             };
 
-            return CreatedAtAction(nameof(GetGalleryBySchool), new { subdomain = subdomain }, galleryDto);
+            return CreatedAtAction(nameof(GetGalleryByTenant), new { tenantId = tenantId }, galleryDto);
+        }
+
+        // GET: api/gallery/{tenantId}
+        [HttpGet("{tenantId}")]
+        public async Task<ActionResult<IEnumerable<GalleryImageDto>>> GetGalleryByTenant(int tenantId)
+        {
+            var galleryImages = await _context.GalleryImages
+                .Where(g => g.TenantId == tenantId)
+                .OrderByDescending(g => g.CreatedAt)
+                .ToListAsync();
+
+            var galleryDtos = galleryImages.Select(g => new GalleryImageDto
+            {
+                Id = g.Id,
+                ImageUrl = g.ImageUrl,
+                Caption = g.Caption,
+                CreatedAt = g.CreatedAt
+            }).ToList();
+
+            return Ok(galleryDtos);
+        }
+
+        // DELETE: api/gallery/{id}
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteGalleryImage(int id)
+        {
+            // Get tenantId from claims
+            var tenantIdClaim = User.FindFirst("TenantId")?.Value;
+            if (string.IsNullOrEmpty(tenantIdClaim) || !int.TryParse(tenantIdClaim, out int tenantId))
+            {
+                return Unauthorized("Invalid tenant");
+            }
+
+            var galleryImage = await _context.GalleryImages.FindAsync(id);
+            if (galleryImage == null)
+            {
+                return NotFound("Gallery image not found");
+            }
+
+            // Verify image belongs to tenant
+            if (galleryImage.TenantId != tenantId)
+            {
+                return Forbid("You don't have permission to delete this image");
+            }
+
+            _context.GalleryImages.Remove(galleryImage);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
     }
 }

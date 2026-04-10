@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolWebsite.Data;
@@ -17,50 +18,21 @@ namespace SchoolWebsite.Controllers
             _context = context;
         }
 
-        // GET: api/school/{subdomain}/notices
-        [HttpGet("/api/school/{subdomain}/notices")]
-        public async Task<ActionResult<IEnumerable<NoticeDto>>> GetNoticesBySchool(string subdomain)
+        // POST: api/notice
+        [HttpPost]
+        [Authorize]
+        public async Task<ActionResult<NoticeDto>> CreateNotice(CreateNoticeDto createNoticeDto)
         {
-            var tenant = await _context.Tenants
-                .FirstOrDefaultAsync(t => t.Subdomain.ToLower() == subdomain.ToLower() && t.IsActive);
-
-            if (tenant == null)
+            // Get tenantId from claims
+            var tenantIdClaim = User.FindFirst("TenantId")?.Value;
+            if (string.IsNullOrEmpty(tenantIdClaim) || !int.TryParse(tenantIdClaim, out int tenantId))
             {
-                return NotFound("School not found");
-            }
-
-            var notices = await _context.Notices
-                .Where(n => n.TenantId == tenant.Id)
-                .OrderByDescending(n => n.CreatedAt)
-                .ToListAsync();
-
-            var noticeDtos = notices.Select(n => new NoticeDto
-            {
-                Id = n.Id,
-                Title = n.Title,
-                Content = n.Content,
-                IsImportant = n.IsImportant,
-                CreatedAt = n.CreatedAt
-            }).ToList();
-
-            return Ok(noticeDtos);
-        }
-
-        // POST: api/school/{subdomain}/notice
-        [HttpPost("/api/school/{subdomain}/notice")]
-        public async Task<ActionResult<NoticeDto>> CreateNotice(string subdomain, CreateNoticeDto createNoticeDto)
-        {
-            var tenant = await _context.Tenants
-                .FirstOrDefaultAsync(t => t.Subdomain.ToLower() == subdomain.ToLower() && t.IsActive);
-
-            if (tenant == null)
-            {
-                return NotFound("School not found");
+                return Unauthorized("Invalid tenant");
             }
 
             var notice = new Notice
             {
-                TenantId = tenant.Id,
+                TenantId = tenantId,
                 Title = createNoticeDto.Title,
                 Content = createNoticeDto.Content,
                 IsImportant = createNoticeDto.IsImportant
@@ -78,7 +50,91 @@ namespace SchoolWebsite.Controllers
                 CreatedAt = notice.CreatedAt
             };
 
-            return CreatedAtAction(nameof(GetNoticesBySchool), new { subdomain = subdomain }, noticeDto);
+            return CreatedAtAction(nameof(GetNoticesByTenant), new { tenantId = tenantId }, noticeDto);
+        }
+
+        // GET: api/notice/{tenantId}
+        [HttpGet("{tenantId}")]
+        public async Task<ActionResult<IEnumerable<NoticeDto>>> GetNoticesByTenant(int tenantId)
+        {
+            var notices = await _context.Notices
+                .Where(n => n.TenantId == tenantId)
+                .OrderByDescending(n => n.CreatedAt)
+                .ToListAsync();
+
+            var noticeDtos = notices.Select(n => new NoticeDto
+            {
+                Id = n.Id,
+                Title = n.Title,
+                Content = n.Content,
+                IsImportant = n.IsImportant,
+                CreatedAt = n.CreatedAt
+            }).ToList();
+
+            return Ok(noticeDtos);
+        }
+
+        // PUT: api/notice/{id}
+        [HttpPut("{id}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateNotice(int id, UpdateNoticeDto updateNoticeDto)
+        {
+            // Get tenantId from claims
+            var tenantIdClaim = User.FindFirst("TenantId")?.Value;
+            if (string.IsNullOrEmpty(tenantIdClaim) || !int.TryParse(tenantIdClaim, out int tenantId))
+            {
+                return Unauthorized("Invalid tenant");
+            }
+
+            var notice = await _context.Notices.FindAsync(id);
+            if (notice == null)
+            {
+                return NotFound("Notice not found");
+            }
+
+            // Verify notice belongs to tenant
+            if (notice.TenantId != tenantId)
+            {
+                return Forbid("You don't have permission to edit this notice");
+            }
+
+            notice.Title = updateNoticeDto.Title ?? notice.Title;
+            notice.Content = updateNoticeDto.Content ?? notice.Content;
+            notice.IsImportant = updateNoticeDto.IsImportant ?? notice.IsImportant;
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        // DELETE: api/notice/{id}
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteNotice(int id)
+        {
+            // Get tenantId from claims
+            var tenantIdClaim = User.FindFirst("TenantId")?.Value;
+            if (string.IsNullOrEmpty(tenantIdClaim) || !int.TryParse(tenantIdClaim, out int tenantId))
+            {
+                return Unauthorized("Invalid tenant");
+            }
+
+            var notice = await _context.Notices.FindAsync(id);
+            if (notice == null)
+            {
+                return NotFound("Notice not found");
+            }
+
+            // Verify notice belongs to tenant
+            if (notice.TenantId != tenantId)
+            {
+                return Forbid("You don't have permission to delete this notice");
+            }
+
+            _context.Notices.Remove(notice);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
     }
 }
