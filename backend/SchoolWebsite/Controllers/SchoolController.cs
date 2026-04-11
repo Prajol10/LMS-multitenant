@@ -17,7 +17,6 @@ namespace SchoolWebsite.Controllers
             _context = context;
         }
 
-        // GET: api/school/{subdomain}
         [HttpGet("{subdomain}")]
         public async Task<ActionResult<TenantDto>> GetSchoolBySubdomain(string subdomain)
         {
@@ -25,11 +24,9 @@ namespace SchoolWebsite.Controllers
                 .FirstOrDefaultAsync(t => t.Subdomain.ToLower() == subdomain.ToLower() && t.IsActive);
 
             if (tenant == null)
-            {
                 return NotFound("School not found");
-            }
 
-            var tenantDto = new TenantDto
+            return Ok(new TenantDto
             {
                 Id = tenant.Id,
                 SchoolName = tenant.SchoolName,
@@ -44,23 +41,66 @@ namespace SchoolWebsite.Controllers
                 EstablishedYear = tenant.EstablishedYear,
                 IsActive = tenant.IsActive,
                 CreatedAt = tenant.CreatedAt
-            };
-
-            return Ok(tenantDto);
+            });
         }
 
-        // POST: api/school
+        [HttpGet("{subdomain}/notices")]
+        public async Task<ActionResult> GetNoticesBySubdomain(string subdomain)
+        {
+            var tenant = await _context.Tenants
+                .FirstOrDefaultAsync(t => t.Subdomain.ToLower() == subdomain.ToLower() && t.IsActive);
+
+            if (tenant == null)
+                return NotFound("School not found");
+
+            var notices = await _context.Notices
+                .Where(n => n.TenantId == tenant.Id)
+                .OrderByDescending(n => n.CreatedAt)
+                .Select(n => new
+                {
+                    n.Id,
+                    n.Title,
+                    n.Content,
+                    n.IsImportant,
+                    n.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(notices);
+        }
+
+        [HttpGet("{subdomain}/gallery")]
+        public async Task<ActionResult> GetGalleryBySubdomain(string subdomain)
+        {
+            var tenant = await _context.Tenants
+                .FirstOrDefaultAsync(t => t.Subdomain.ToLower() == subdomain.ToLower() && t.IsActive);
+
+            if (tenant == null)
+                return NotFound("School not found");
+
+            var gallery = await _context.GalleryImages
+                .Where(g => g.TenantId == tenant.Id)
+                .OrderByDescending(g => g.CreatedAt)
+                .Select(g => new
+                {
+                    g.Id,
+                    g.ImageUrl,
+                    g.Caption,
+                    g.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(gallery);
+        }
+
         [HttpPost]
         public async Task<ActionResult<TenantDto>> CreateSchool(CreateTenantDto createTenantDto)
         {
-            // Check if subdomain already exists
             var existingTenant = await _context.Tenants
                 .FirstOrDefaultAsync(t => t.Subdomain.ToLower() == createTenantDto.Subdomain.ToLower());
 
             if (existingTenant != null)
-            {
                 return BadRequest("Subdomain already exists");
-            }
 
             var tenant = new Tenant
             {
@@ -79,7 +119,7 @@ namespace SchoolWebsite.Controllers
             _context.Tenants.Add(tenant);
             await _context.SaveChangesAsync();
 
-            var tenantDto = new TenantDto
+            return CreatedAtAction(nameof(GetSchoolBySubdomain), new { subdomain = tenant.Subdomain }, new TenantDto
             {
                 Id = tenant.Id,
                 SchoolName = tenant.SchoolName,
@@ -94,9 +134,7 @@ namespace SchoolWebsite.Controllers
                 EstablishedYear = tenant.EstablishedYear,
                 IsActive = tenant.IsActive,
                 CreatedAt = tenant.CreatedAt
-            };
-
-            return CreatedAtAction(nameof(GetSchoolBySubdomain), new { subdomain = tenant.Subdomain }, tenantDto);
+            });
         }
     }
 }
