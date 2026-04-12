@@ -1,6 +1,5 @@
 namespace SchoolWebsite.DTOs
 {
-    // Request DTOs
     public class CreateTenantDto
     {
         public string SchoolName { get; set; } = string.Empty;
@@ -13,6 +12,9 @@ namespace SchoolWebsite.DTOs
         public string? Phone { get; set; }
         public string? Email { get; set; }
         public int? EstablishedYear { get; set; }
+        public string? FacebookUrl { get; set; }
+        public string? InstagramUrl { get; set; }
+        public string? WebsiteUrl { get; set; }
     }
 
     public class UpdateTenantDto
@@ -27,9 +29,11 @@ namespace SchoolWebsite.DTOs
         public string? Email { get; set; }
         public int? EstablishedYear { get; set; }
         public bool? IsActive { get; set; }
+        public string? FacebookUrl { get; set; }
+        public string? InstagramUrl { get; set; }
+        public string? WebsiteUrl { get; set; }
     }
 
-    // Response DTOs
     public class TenantDto
     {
         public int Id { get; set; }
@@ -43,6 +47,9 @@ namespace SchoolWebsite.DTOs
         public string? Phone { get; set; }
         public string? Email { get; set; }
         public int? EstablishedYear { get; set; }
+        public string? FacebookUrl { get; set; }
+        public string? InstagramUrl { get; set; }
+        public string? WebsiteUrl { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
     }

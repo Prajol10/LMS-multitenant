@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-
 namespace SchoolWebsite.Models
 {
     public class Tenant
@@ -22,17 +21,16 @@ namespace SchoolWebsite.Models
         public string AccentColor { get; set; } = "#C9A84C";
         
         public string? AboutText { get; set; }
-        
         public string? Address { get; set; }
-        
         public string? Phone { get; set; }
-        
         public string? Email { get; set; }
-        
         public int? EstablishedYear { get; set; }
         
-        public bool IsActive { get; set; } = true;
+        public string? FacebookUrl { get; set; }
+        public string? InstagramUrl { get; set; }
+        public string? WebsiteUrl { get; set; }
         
+        public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
