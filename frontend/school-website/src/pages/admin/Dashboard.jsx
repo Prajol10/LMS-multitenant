@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5071/api';
@@ -15,6 +16,7 @@ export default function Dashboard() {
   const [showGalleryForm, setShowGalleryForm] = useState(false);
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
+  const { school } = useParams();
   const token = localStorage.getItem('token');
   const tenantId = localStorage.getItem('tenantId');
 
@@ -98,7 +100,7 @@ export default function Dashboard() {
 
   const logout = () => {
     localStorage.clear();
-    navigate('/admin/login');
+    navigate(`/${school}/admin`);
   };
 
   if (loading) return (

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5071/api';
@@ -9,6 +10,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { school } = useParams();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -26,7 +28,7 @@ export default function LoginPage() {
       localStorage.setItem('role', data.role);
       localStorage.setItem('tenantId', data.tenantId || '');
       if (data.role === 'SuperAdmin') navigate('/superadmin');
-      else navigate('/admin/dashboard');
+      else navigate(`/${school}/admin/dashboard`);
     } catch (err) {
       setError(err.message);
     } finally {
