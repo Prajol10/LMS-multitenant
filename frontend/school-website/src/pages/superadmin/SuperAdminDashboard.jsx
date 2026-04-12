@@ -92,7 +92,7 @@ export default function SuperAdminDashboard() {
     <div className="flex min-h-screen bg-gray-100">
       <div className="w-64 bg-[#1B2A4A] text-white flex flex-col">
         <div className="p-6 border-b border-[#243660]">
-          <h2 className="text-xl font-bold">ItexGiti Admin</h2>
+          <h2 className="text-xl font-bold">Dailo Technology Admin</h2>
           <p className="text-blue-300 text-sm mt-1">Super Administrator</p>
         </div>
         <nav className="flex-1 p-4 space-y-2">

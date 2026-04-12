@@ -25,7 +25,7 @@ export default function LandingPage() {
       <nav className="bg-[#1B2A4A] text-white px-8 py-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 bg-[#C9A84C] rounded-lg flex items-center justify-center font-bold text-[#1B2A4A]">I</div>
-          <span className="text-xl font-bold">ItexGiti</span>
+          <span className="text-xl font-bold">Dailo Technology</span>
         </div>
         <div className="flex items-center gap-4">
           <a href="#schools" className="text-sm text-blue-200 hover:text-white transition">Schools</a>
@@ -47,7 +47,7 @@ export default function LandingPage() {
             One Platform.<br />Every School.
           </h1>
           <p className="text-blue-200 text-lg max-w-2xl mx-auto mb-8">
-            ItexGiti provides each school with their own beautiful website — 
+            Dailo Technology provides each school with their own beautiful website — 
             custom colors, custom content, one powerful system.
           </p>
           <div className="flex justify-center gap-4">
@@ -149,16 +149,16 @@ export default function LandingPage() {
       {/* CTA */}
       <div className="bg-[#1B2A4A] text-white py-16 px-8 text-center">
         <h2 className="text-3xl font-bold mb-4">Want a Website for Your School?</h2>
-        <p className="text-blue-200 mb-8">Contact ItexGiti to get your school's website set up for free.</p>
-        <a href="mailto:itexgiti@gmail.com"
+        <p className="text-blue-200 mb-8">Contact Dailo Technology to get your school's website set up for free.</p>
+        <a href="mailto:info@dailotechnology.com"
           className="bg-[#C9A84C] text-[#1B2A4A] px-8 py-3 rounded-lg font-bold hover:bg-[#b8943f] transition inline-block">
-          Contact Us — itexgiti@gmail.com
+          Contact Us — info@dailotechnology.com
         </a>
       </div>
 
       {/* Footer */}
       <div className="bg-gray-900 text-gray-400 py-6 px-8 text-center text-sm">
-        <p>© 2026 ItexGiti. Built with ❤️ for Nepali schools.</p>
+        <p>© 2026 Dailo Technology. Built with ❤️ for Nepali schools.</p>
       </div>
     </div>
   );
