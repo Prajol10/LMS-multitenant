@@ -85,7 +85,7 @@ export default function SuperAdminDashboard() {
 
   const logout = () => {
     localStorage.clear();
-    navigate('/admin/login');
+    navigate('/superadmin/login');
   };
 
   return (
