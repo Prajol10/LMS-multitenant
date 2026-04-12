@@ -5,89 +5,48 @@ const TenantContext = createContext();
 
 export const useTenant = () => {
   const context = useContext(TenantContext);
-  if (!context) {
-    throw new Error('useTenant must be used within a TenantProvider');
-  }
+  if (!context) throw new Error('useTenant must be used within a TenantProvider');
   return context;
 };
 
-export const TenantProvider = ({ children }) => {
+export const TenantProvider = ({ children, schoolSlug }) => {
   const [tenant, setTenant] = useState(null);
   const [notices, setNotices] = useState([]);
   const [gallery, setGallery] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Extract tenant identifier from URL query parameter or subdomain
-  const getTenantIdentifier = () => {
-    // First check query parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    const schoolParam = urlParams.get('school');
-    if (schoolParam) {
-      return schoolParam;
-    }
-
-    // For localhost testing
-    const hostname = window.location.hostname;
-    if (hostname === 'localhost') {
-      return 'ratobangala'; // Default to ratobangala for local development
-    }
-
-    // For production domains like subdomain.netlify.app
-    if (hostname.endsWith('.netlify.app')) {
-      const parts = hostname.split('.');
-      if (parts.length >= 3) {
-        return parts[0]; // subdomain part
-      }
-    }
-
-    return null;
-  };
-
-  // Load tenant data
   const loadTenantData = async () => {
     try {
       setLoading(true);
-      const tenantIdentifier = getTenantIdentifier();
-      
-      if (!tenantIdentifier) {
-        throw new Error('No school identifier found in URL');
+
+      // Use passed schoolSlug, or fall back to ?school= query param
+      const urlParams = new URLSearchParams(window.location.search);
+      const identifier = schoolSlug || urlParams.get('school');
+
+      if (!identifier) {
+        throw new Error('No school identifier found');
       }
 
-      // Fetch tenant data
-      const tenantData = await ApiService.getSchoolByTenant(tenantIdentifier);
+      const tenantData = await ApiService.getSchoolByTenant(identifier);
       setTenant(tenantData);
 
-      // Fetch notices
-      const noticesData = await ApiService.getNoticesByTenant(tenantIdentifier);
+      const noticesData = await ApiService.getNoticesByTenant(identifier);
       setNotices(noticesData);
 
-      // Fetch gallery
-      const galleryData = await ApiService.getGalleryByTenant(tenantIdentifier);
+      const galleryData = await ApiService.getGalleryByTenant(identifier);
       setGallery(galleryData);
     } catch (err) {
-      console.error('Error loading tenant data:', err);
       setError(err.message || 'Failed to load school data');
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    loadTenantData();
-  }, []);
-
-  const value = {
-    tenant,
-    notices,
-    gallery,
-    loading,
-    error,
-    reloadTenantData: loadTenantData
-  };
+  useEffect(() => { loadTenantData(); }, [schoolSlug]);
 
   return (
-    <TenantContext.Provider value={value}>
+    <TenantContext.Provider value={{ tenant, notices, gallery, loading, error, reloadTenantData: loadTenantData }}>
       {children}
     </TenantContext.Provider>
   );
