@@ -207,7 +207,7 @@ export default function SuperAdminDashboard() {
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${school.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                     {school.isActive ? 'Active' : 'Inactive'}
                   </span>
-                  <a href={`https://lmsschool.netlify.app?school=${school.subdomain}`} target="_blank"
+                  <a href={`https://lmsschool.netlify.app/${school.subdomain}`} target="_blank"
                     className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium hover:bg-blue-200 transition">
                     View Site
                   </a>
