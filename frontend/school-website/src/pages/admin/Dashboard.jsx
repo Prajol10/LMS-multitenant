@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5071/api';
 
 export default function Dashboard() {
+  const { school } = useParams();
   const [activeTab, setActiveTab] = useState('notices');
   const [notices, setNotices] = useState([]);
   const [gallery, setGallery] = useState([]);
@@ -14,8 +15,10 @@ export default function Dashboard() {
   const [showNoticeForm, setShowNoticeForm] = useState(false);
   const [showGalleryForm, setShowGalleryForm] = useState(false);
   const [message, setMessage] = useState('');
+  const [editingInfo, setEditingInfo] = useState(false);
+  const [infoForm, setInfoForm] = useState({});
+  const [savingInfo, setSavingInfo] = useState(false);
   const navigate = useNavigate();
-  const { school } = useParams();
   const token = localStorage.getItem('token');
 
   useEffect(() => { fetchData(); }, []);
@@ -25,13 +28,21 @@ export default function Dashboard() {
       const res = await fetch(`${API}/admin/school`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const schoolData = await res.json();
-      setSchoolInfo(schoolData);
+      const s = await res.json();
+      setSchoolInfo(s);
+      setInfoForm({
+        schoolName: s.schoolName || '',
+        aboutText: s.aboutText || '',
+        address: s.address || '',
+        phone: s.phone || '',
+        email: s.email || '',
+        establishedYear: s.establishedYear || '',
+      });
 
-      const noticesRes = await fetch(`${API}/school/${schoolData.subdomain}/notices`);
+      const noticesRes = await fetch(`${API}/school/${s.subdomain}/notices`);
       setNotices(await noticesRes.json());
 
-      const galleryRes = await fetch(`${API}/school/${schoolData.subdomain}/gallery`);
+      const galleryRes = await fetch(`${API}/school/${s.subdomain}/gallery`);
       setGallery(await galleryRes.json());
     } catch (err) {
       console.error(err);
@@ -49,7 +60,7 @@ export default function Dashboard() {
         body: JSON.stringify(noticeForm)
       });
       if (!res.ok) throw new Error('Failed to add notice');
-      setMessage('Notice added successfully!');
+      setMessage('Notice added!');
       setShowNoticeForm(false);
       setNoticeForm({ title: '', content: '', isImportant: false });
       fetchData();
@@ -76,7 +87,7 @@ export default function Dashboard() {
         body: JSON.stringify(galleryForm)
       });
       if (!res.ok) throw new Error('Failed to add image');
-      setMessage('Image added successfully!');
+      setMessage('Image added!');
       setShowGalleryForm(false);
       setGalleryForm({ imageUrl: '', caption: '' });
       fetchData();
@@ -92,6 +103,26 @@ export default function Dashboard() {
       });
       fetchData();
     } catch (err) { console.error(err); }
+  };
+
+  const saveSchoolInfo = async (e) => {
+    e.preventDefault();
+    setSavingInfo(true);
+    try {
+      const res = await fetch(`${API}/admin/school`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          ...infoForm,
+          establishedYear: infoForm.establishedYear ? parseInt(infoForm.establishedYear) : null
+        })
+      });
+      if (!res.ok) throw new Error('Failed to save');
+      setMessage('School info saved!');
+      setEditingInfo(false);
+      fetchData();
+    } catch (err) { setMessage(err.message); }
+    finally { setSavingInfo(false); }
   };
 
   const logout = () => {
@@ -125,12 +156,11 @@ export default function Dashboard() {
           ))}
         </nav>
         <div className="p-4 space-y-2">
-          <a href={`/?school=${school}`}
-            className="block w-full text-center bg-[#243660] text-white px-4 py-2 rounded-lg text-sm hover:bg-[#2d4070] transition">
+          <a href={`/${school}`}
+            className="block w-full text-center bg-[#243660] hover:bg-[#2d4580] text-white px-4 py-2 rounded-lg text-sm transition">
             View Public Site
           </a>
-          <button onClick={logout}
-            className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition">
+          <button onClick={logout} className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition">
             Logout
           </button>
         </div>
@@ -140,7 +170,7 @@ export default function Dashboard() {
         {message && (
           <div className="mb-4 px-4 py-3 bg-green-50 text-green-600 rounded-lg text-sm flex justify-between">
             {message}
-            <button onClick={() => setMessage('')} className="text-green-400">✕</button>
+            <button onClick={() => setMessage('')}>✕</button>
           </div>
         )}
 
@@ -179,7 +209,7 @@ export default function Dashboard() {
             )}
             <div className="space-y-4">
               {notices.length === 0 ? (
-                <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">No notices yet. Add your first notice!</div>
+                <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">No notices yet — add your first notice!</div>
               ) : notices.map(notice => (
                 <div key={notice.id} className={`bg-white rounded-xl shadow p-5 border-l-4 ${notice.isImportant ? 'border-red-500' : 'border-gray-200'}`}>
                   <div className="flex justify-between items-start">
@@ -191,8 +221,7 @@ export default function Dashboard() {
                       <p className="text-gray-600 text-sm">{notice.content}</p>
                       <p className="text-gray-400 text-xs mt-2">{new Date(notice.createdAt).toLocaleDateString()}</p>
                     </div>
-                    <button onClick={() => deleteNotice(notice.id)}
-                      className="text-red-400 hover:text-red-600 transition ml-4 text-sm">Delete</button>
+                    <button onClick={() => deleteNotice(notice.id)} className="text-red-400 hover:text-red-600 transition ml-4 text-sm">Delete</button>
                   </div>
                 </div>
               ))}
@@ -231,14 +260,13 @@ export default function Dashboard() {
             )}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {gallery.length === 0 ? (
-                <div className="col-span-3 bg-white rounded-xl shadow p-8 text-center text-gray-400">No images yet. Add your first photo!</div>
+                <div className="col-span-3 bg-white rounded-xl shadow p-8 text-center text-gray-400">No images yet — add your first photo!</div>
               ) : gallery.map(img => (
                 <div key={img.id} className="bg-white rounded-xl shadow overflow-hidden">
                   <img src={img.imageUrl} alt={img.caption} className="w-full h-48 object-cover" />
                   <div className="p-3 flex justify-between items-center">
                     <p className="text-sm text-gray-600 truncate">{img.caption}</p>
-                    <button onClick={() => deleteGalleryImage(img.id)}
-                      className="text-red-400 hover:text-red-600 transition text-sm ml-2">Delete</button>
+                    <button onClick={() => deleteGalleryImage(img.id)} className="text-red-400 hover:text-red-600 transition text-sm ml-2">Delete</button>
                   </div>
                 </div>
               ))}
@@ -248,26 +276,82 @@ export default function Dashboard() {
 
         {activeTab === 'info' && schoolInfo && (
           <div>
-            <h1 className="text-2xl font-bold text-[#1B2A4A] mb-6">School Information</h1>
-            <div className="bg-white rounded-xl shadow p-6 space-y-4">
-              {[
-                { label: 'School Name', value: schoolInfo.schoolName },
-                { label: 'Subdomain', value: schoolInfo.subdomain },
-                { label: 'Address', value: schoolInfo.address },
-                { label: 'Phone', value: schoolInfo.phone },
-                { label: 'Email', value: schoolInfo.email },
-                { label: 'Established Year', value: schoolInfo.establishedYear },
-              ].map(({ label, value }) => (
-                <div key={label} className="border-b border-gray-100 pb-3">
-                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">{label}</p>
-                  <p className="text-gray-800 mt-1">{value || 'Not set'}</p>
-                </div>
-              ))}
-              <div>
-                <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">About</p>
-                <p className="text-gray-800 mt-1">{schoolInfo.aboutText || 'Not set'}</p>
-              </div>
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl font-bold text-[#1B2A4A]">School Information</h1>
+              {!editingInfo && (
+                <button onClick={() => setEditingInfo(true)}
+                  className="bg-[#1B2A4A] text-white px-4 py-2 rounded-lg hover:bg-[#243660] transition">
+                  Edit Info
+                </button>
+              )}
             </div>
+
+            {editingInfo ? (
+              <div className="bg-white rounded-xl shadow p-6">
+                <form onSubmit={saveSchoolInfo} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">School Name</label>
+                    <input value={infoForm.schoolName} onChange={e => setInfoForm({...infoForm, schoolName: e.target.value})}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" required />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                    <input value={infoForm.address} onChange={e => setInfoForm({...infoForm, address: e.target.value})}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                    <input value={infoForm.phone} onChange={e => setInfoForm({...infoForm, phone: e.target.value})}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" value={infoForm.email} onChange={e => setInfoForm({...infoForm, email: e.target.value})}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Established Year</label>
+                    <input type="number" value={infoForm.establishedYear} onChange={e => setInfoForm({...infoForm, establishedYear: e.target.value})}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">About</label>
+                    <textarea value={infoForm.aboutText} onChange={e => setInfoForm({...infoForm, aboutText: e.target.value})}
+                      rows={4} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                  </div>
+                  <div className="flex gap-3">
+                    <button type="submit" disabled={savingInfo}
+                      className="bg-[#1B2A4A] text-white px-6 py-2 rounded-lg hover:bg-[#243660] transition disabled:opacity-50">
+                      {savingInfo ? 'Saving...' : 'Save Changes'}
+                    </button>
+                    <button type="button" onClick={() => setEditingInfo(false)}
+                      className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition">
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            ) : (
+              <div className="bg-white rounded-xl shadow p-6 space-y-4">
+                {[
+                  { label: 'School Name', value: schoolInfo.schoolName },
+                  { label: 'Subdomain', value: schoolInfo.subdomain },
+                  { label: 'Address', value: schoolInfo.address },
+                  { label: 'Phone', value: schoolInfo.phone },
+                  { label: 'Email', value: schoolInfo.email },
+                  { label: 'Established Year', value: schoolInfo.establishedYear },
+                ].map(({ label, value }) => (
+                  <div key={label} className="border-b border-gray-100 pb-3">
+                    <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">{label}</p>
+                    <p className="text-gray-800 mt-1">{value || 'Not set'}</p>
+                  </div>
+                ))}
+                <div>
+                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">About</p>
+                  <p className="text-gray-800 mt-1">{schoolInfo.aboutText || 'Not set'}</p>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
