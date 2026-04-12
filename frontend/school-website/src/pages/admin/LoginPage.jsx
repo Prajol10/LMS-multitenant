@@ -43,8 +43,8 @@ export default function LoginPage() {
           <div className="w-16 h-16 bg-[#1B2A4A] rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-white text-2xl font-bold">S</span>
           </div>
-          <h1 className="text-2xl font-bold text-[#1B2A4A]">School Management System</h1>
-          <p className="text-gray-500 mt-1">Sign in to your account</p>
+          <h1 className="text-2xl font-bold text-[#1B2A4A]">{school ? school.charAt(0).toUpperCase() + school.slice(1) : 'School'} Admin Panel</h1>
+          <p className="text-gray-500 mt-1">Sign in to manage your school website</p>
         </div>
 
         {error && (
