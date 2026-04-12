@@ -11,7 +11,6 @@ function RootPage() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const school = params.get('school');
-
   if (school) {
     return (
       <TenantProvider>
@@ -19,7 +18,6 @@ function RootPage() {
       </TenantProvider>
     );
   }
-
   return <LandingPage />;
 }
 
@@ -27,15 +25,15 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/admin/login" element={<LoginPage />} />
-        <Route path="/admin/dashboard" element={
-          <ProtectedRoute requiredRole="SchoolAdmin">
-            <Dashboard />
-          </ProtectedRoute>
-        } />
         <Route path="/superadmin" element={
           <ProtectedRoute requiredRole="SuperAdmin">
             <SuperAdminDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/:school/admin" element={<LoginPage />} />
+        <Route path="/:school/admin/dashboard" element={
+          <ProtectedRoute requiredRole="SchoolAdmin">
+            <Dashboard />
           </ProtectedRoute>
         } />
         <Route path="/*" element={<RootPage />} />

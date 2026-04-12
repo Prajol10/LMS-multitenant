@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5071/api';
 
@@ -27,6 +26,7 @@ export default function LoginPage() {
       localStorage.setItem('token', data.token);
       localStorage.setItem('role', data.role);
       localStorage.setItem('tenantId', data.tenantId || '');
+      localStorage.setItem('school', school || '');
       if (data.role === 'SuperAdmin') navigate('/superadmin');
       else navigate(`/${school}/admin/dashboard`);
     } catch (err) {
@@ -41,10 +41,10 @@ export default function LoginPage() {
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-[#1B2A4A] rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-2xl font-bold">S</span>
+            <span className="text-white text-2xl font-bold">{school?.[0]?.toUpperCase() || 'S'}</span>
           </div>
-          <h1 className="text-2xl font-bold text-[#1B2A4A]">{school ? school.charAt(0).toUpperCase() + school.slice(1) : 'School'} Admin Panel</h1>
-          <p className="text-gray-500 mt-1">Sign in to manage your school website</p>
+          <h1 className="text-2xl font-bold text-[#1B2A4A] capitalize">{school} Admin Panel</h1>
+          <p className="text-gray-500 mt-1">Sign in to manage your school</p>
         </div>
 
         {error && (
@@ -84,6 +84,10 @@ export default function LoginPage() {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
+
+        <p className="text-center text-sm text-gray-400 mt-6">
+          <a href="/" className="hover:text-[#1B2A4A] transition">← Back to main site</a>
+        </p>
       </div>
     </div>
   );

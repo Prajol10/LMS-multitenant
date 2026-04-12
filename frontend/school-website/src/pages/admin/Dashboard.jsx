@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5071/api';
 
@@ -18,7 +17,6 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { school } = useParams();
   const token = localStorage.getItem('token');
-  const tenantId = localStorage.getItem('tenantId');
 
   useEffect(() => { fetchData(); }, []);
 
@@ -27,16 +25,14 @@ export default function Dashboard() {
       const res = await fetch(`${API}/admin/school`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const school = await res.json();
-      setSchoolInfo(school);
+      const schoolData = await res.json();
+      setSchoolInfo(schoolData);
 
-      const noticesRes = await fetch(`${API}/school/${school.subdomain}/notices`);
-      const noticesData = await noticesRes.json();
-      setNotices(noticesData);
+      const noticesRes = await fetch(`${API}/school/${schoolData.subdomain}/notices`);
+      setNotices(await noticesRes.json());
 
-      const galleryRes = await fetch(`${API}/school/${school.subdomain}/gallery`);
-      const galleryData = await galleryRes.json();
-      setGallery(galleryData);
+      const galleryRes = await fetch(`${API}/school/${schoolData.subdomain}/gallery`);
+      setGallery(await galleryRes.json());
     } catch (err) {
       console.error(err);
     } finally {
@@ -53,7 +49,7 @@ export default function Dashboard() {
         body: JSON.stringify(noticeForm)
       });
       if (!res.ok) throw new Error('Failed to add notice');
-      setMessage('Notice added!');
+      setMessage('Notice added successfully!');
       setShowNoticeForm(false);
       setNoticeForm({ title: '', content: '', isImportant: false });
       fetchData();
@@ -80,7 +76,7 @@ export default function Dashboard() {
         body: JSON.stringify(galleryForm)
       });
       if (!res.ok) throw new Error('Failed to add image');
-      setMessage('Image added!');
+      setMessage('Image added successfully!');
       setShowGalleryForm(false);
       setGalleryForm({ imageUrl: '', caption: '' });
       fetchData();
@@ -128,8 +124,13 @@ export default function Dashboard() {
             </button>
           ))}
         </nav>
-        <div className="p-4">
-          <button onClick={logout} className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition">
+        <div className="p-4 space-y-2">
+          <a href={`/?school=${school}`}
+            className="block w-full text-center bg-[#243660] text-white px-4 py-2 rounded-lg text-sm hover:bg-[#2d4070] transition">
+            View Public Site
+          </a>
+          <button onClick={logout}
+            className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition">
             Logout
           </button>
         </div>
@@ -137,8 +138,9 @@ export default function Dashboard() {
 
       <div className="flex-1 p-8">
         {message && (
-          <div className="mb-4 px-4 py-3 bg-green-50 text-green-600 rounded-lg text-sm">
-            {message} <button onClick={() => setMessage('')} className="ml-2 text-green-400">✕</button>
+          <div className="mb-4 px-4 py-3 bg-green-50 text-green-600 rounded-lg text-sm flex justify-between">
+            {message}
+            <button onClick={() => setMessage('')} className="text-green-400">✕</button>
           </div>
         )}
 
@@ -151,7 +153,6 @@ export default function Dashboard() {
                 {showNoticeForm ? 'Cancel' : '+ Add Notice'}
               </button>
             </div>
-
             {showNoticeForm && (
               <div className="bg-white rounded-xl shadow p-6 mb-6">
                 <form onSubmit={addNotice} className="space-y-4">
@@ -167,8 +168,7 @@ export default function Dashboard() {
                   </div>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" checked={noticeForm.isImportant}
-                      onChange={e => setNoticeForm({...noticeForm, isImportant: e.target.checked})}
-                      className="w-4 h-4" />
+                      onChange={e => setNoticeForm({...noticeForm, isImportant: e.target.checked})} className="w-4 h-4" />
                     <span className="text-sm font-medium text-gray-700">Mark as Important</span>
                   </label>
                   <button type="submit" className="bg-[#1B2A4A] text-white px-6 py-2 rounded-lg hover:bg-[#243660] transition">
@@ -177,10 +177,9 @@ export default function Dashboard() {
                 </form>
               </div>
             )}
-
             <div className="space-y-4">
               {notices.length === 0 ? (
-                <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">No notices yet</div>
+                <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">No notices yet. Add your first notice!</div>
               ) : notices.map(notice => (
                 <div key={notice.id} className={`bg-white rounded-xl shadow p-5 border-l-4 ${notice.isImportant ? 'border-red-500' : 'border-gray-200'}`}>
                   <div className="flex justify-between items-start">
@@ -210,7 +209,6 @@ export default function Dashboard() {
                 {showGalleryForm ? 'Cancel' : '+ Add Image'}
               </button>
             </div>
-
             {showGalleryForm && (
               <div className="bg-white rounded-xl shadow p-6 mb-6">
                 <form onSubmit={addGalleryImage} className="space-y-4">
@@ -231,10 +229,9 @@ export default function Dashboard() {
                 </form>
               </div>
             )}
-
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {gallery.length === 0 ? (
-                <div className="col-span-3 bg-white rounded-xl shadow p-8 text-center text-gray-400">No images yet</div>
+                <div className="col-span-3 bg-white rounded-xl shadow p-8 text-center text-gray-400">No images yet. Add your first photo!</div>
               ) : gallery.map(img => (
                 <div key={img.id} className="bg-white rounded-xl shadow overflow-hidden">
                   <img src={img.imageUrl} alt={img.caption} className="w-full h-48 object-cover" />

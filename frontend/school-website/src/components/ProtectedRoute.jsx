@@ -7,11 +7,12 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 
   if (!token) {
     if (school) return <Navigate to={`/${school}/admin`} replace />;
-    return <Navigate to="/superadmin/login" replace />;
+    return <Navigate to="/" replace />;
   }
+
   if (requiredRole && role !== requiredRole) {
     if (school) return <Navigate to={`/${school}/admin`} replace />;
-    return <Navigate to="/superadmin/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return children;
