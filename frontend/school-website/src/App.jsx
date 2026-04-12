@@ -10,6 +10,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/superadmin/login" element={<LoginPage />} />
         <Route path="/superadmin" element={
           <ProtectedRoute requiredRole="SuperAdmin">
             <SuperAdminDashboard />
