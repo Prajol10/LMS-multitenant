@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5071/api';
 
-const SCHOOLS = [
+const SCHOOLS_FALLBACK = [
   { name: 'Rato Bangala School', subdomain: 'ratobangala', color: '#8B0000', est: 1990 },
   { name: 'St. Xaviers College', subdomain: 'xavier', color: '#003087', est: 1951 },
   { name: 'Budhanilkantha School', subdomain: 'budhanilkantha', color: '#1B4332', est: 1972 },
@@ -13,6 +13,26 @@ const SCHOOLS = [
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const [schools, setSchools] = useState(SCHOOLS_FALLBACK);
+  const [loadingSchools, setLoadingSchools] = useState(true);
+
+  useEffect(() => {
+    fetch(`${API}/superadmin/schools`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setSchools(data.filter(s => s.isActive).map(s => ({
+            name: s.schoolName,
+            subdomain: s.subdomain,
+            color: s.primaryColor,
+            est: s.establishedYear,
+            logoUrl: s.logoUrl
+          })));
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoadingSchools(false));
+  }, []);
 
   return (
     <div className="min-h-screen bg-white">
@@ -41,7 +61,7 @@ export default function LandingPage() {
       <div className="max-w-6xl mx-auto px-8 py-16">
         <h2 className="text-2xl font-bold text-[#1B2A4A] mb-8 text-center">Our Partner Schools</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {SCHOOLS.map(school => (
+          {schools.map(school => (
             <div key={school.subdomain} className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition">
               <div className="h-3" style={{ backgroundColor: school.color }}></div>
               <div className="p-6">

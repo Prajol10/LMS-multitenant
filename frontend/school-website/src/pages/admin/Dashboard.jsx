@@ -37,6 +37,10 @@ export default function Dashboard() {
         phone: s.phone || '',
         email: s.email || '',
         establishedYear: s.establishedYear || '',
+        logoUrl: s.logoUrl || '',
+        facebookUrl: s.facebookUrl || '',
+        instagramUrl: s.instagramUrl || '',
+        websiteUrl: s.websiteUrl || '',
       });
 
       const noticesRes = await fetch(`${API}/school/${s.subdomain}/notices`);
@@ -318,6 +322,30 @@ export default function Dashboard() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">About</label>
                     <textarea value={infoForm.aboutText} onChange={e => setInfoForm({...infoForm, aboutText: e.target.value})}
                       rows={4} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
+                    <input value={infoForm.logoUrl} onChange={e => setInfoForm({...infoForm, logoUrl: e.target.value})}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
+                      placeholder="https://..." />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Facebook URL</label>
+                    <input value={infoForm.facebookUrl} onChange={e => setInfoForm({...infoForm, facebookUrl: e.target.value})}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
+                      placeholder="https://facebook.com/..." />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Instagram URL</label>
+                    <input value={infoForm.instagramUrl} onChange={e => setInfoForm({...infoForm, instagramUrl: e.target.value})}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
+                      placeholder="https://instagram.com/..." />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
+                    <input value={infoForm.websiteUrl} onChange={e => setInfoForm({...infoForm, websiteUrl: e.target.value})}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
+                      placeholder="https://..." />
                   </div>
                   <div className="flex gap-3">
                     <button type="submit" disabled={savingInfo}
