@@ -14,6 +14,8 @@ export default function SuperAdminDashboard() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
+  const [adminForms, setAdminForms] = useState({});
+  const [adminMessages, setAdminMessages] = useState({});
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
 
@@ -56,6 +58,31 @@ export default function SuperAdminDashboard() {
     }
   };
 
+  const toggleAdminForm = (schoolId) => {
+    setAdminForms(prev => ({
+      ...prev,
+      [schoolId]: prev[schoolId] ? null : { email: '', password: '' }
+    }));
+  };
+
+  const handleCreateAdmin = async (e, schoolId) => {
+    e.preventDefault();
+    const form = adminForms[schoolId];
+    try {
+      const res = await fetch(`${API}/superadmin/schools/${schoolId}/admin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ email: form.email, password: form.password })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || data || 'Failed to create admin');
+      setAdminMessages(prev => ({ ...prev, [schoolId]: '✅ Admin created! Email: ' + form.email }));
+      setAdminForms(prev => ({ ...prev, [schoolId]: null }));
+    } catch (err) {
+      setAdminMessages(prev => ({ ...prev, [schoolId]: '❌ ' + err.message }));
+    }
+  };
+
   const logout = () => {
     localStorage.clear();
     navigate('/admin/login');
@@ -81,10 +108,8 @@ export default function SuperAdminDashboard() {
       <div className="flex-1 p-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-[#1B2A4A]">All Schools</h1>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="bg-[#1B2A4A] text-white px-4 py-2 rounded-lg hover:bg-[#243660] transition"
-          >
+          <button onClick={() => setShowForm(!showForm)}
+            className="bg-[#1B2A4A] text-white px-4 py-2 rounded-lg hover:bg-[#243660] transition">
             {showForm ? 'Cancel' : '+ Add New School'}
           </button>
         </div>
@@ -105,9 +130,10 @@ export default function SuperAdminDashboard() {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" required />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Subdomain</label>
-                <input value={form.subdomain} onChange={e => setForm({...form, subdomain: e.target.value})}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" required />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Subdomain (no spaces, lowercase)</label>
+                <input value={form.subdomain} onChange={e => setForm({...form, subdomain: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '')})}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
+                  placeholder="e.g. ratobangala" required />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Primary Color</label>
@@ -170,12 +196,14 @@ export default function SuperAdminDashboard() {
                     <p className="text-sm text-gray-500">{school.subdomain}</p>
                   </div>
                 </div>
-                <div className="text-sm text-gray-600 space-y-1">
+
+                <div className="text-sm text-gray-600 space-y-1 mb-4">
                   <p>📍 {school.address || 'No address'}</p>
                   <p>📧 {school.email || 'No email'}</p>
                   <p>📅 Est. {school.establishedYear || 'N/A'}</p>
                 </div>
-                <div className="mt-4 flex gap-2">
+
+                <div className="flex flex-wrap gap-2 mb-3">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${school.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                     {school.isActive ? 'Active' : 'Inactive'}
                   </span>
@@ -184,6 +212,43 @@ export default function SuperAdminDashboard() {
                     View Site
                   </a>
                 </div>
+
+                <button
+                  onClick={() => toggleAdminForm(school.id)}
+                  className="w-full text-sm bg-[#C9A84C] text-white px-3 py-1.5 rounded-lg hover:bg-[#b8943f] transition font-medium">
+                  {adminForms[school.id] ? 'Cancel' : '+ Create Admin Account'}
+                </button>
+
+                {adminMessages[school.id] && (
+                  <p className={`mt-2 text-xs ${adminMessages[school.id].includes('✅') ? 'text-green-600' : 'text-red-500'}`}>
+                    {adminMessages[school.id]}
+                  </p>
+                )}
+
+                {adminForms[school.id] && (
+                  <form onSubmit={(e) => handleCreateAdmin(e, school.id)} className="mt-3 space-y-2">
+                    <input
+                      type="email"
+                      placeholder="Admin email"
+                      value={adminForms[school.id].email}
+                      onChange={e => setAdminForms(prev => ({ ...prev, [school.id]: { ...prev[school.id], email: e.target.value } }))}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
+                      required
+                    />
+                    <input
+                      type="password"
+                      placeholder="Admin password"
+                      value={adminForms[school.id].password}
+                      onChange={e => setAdminForms(prev => ({ ...prev, [school.id]: { ...prev[school.id], password: e.target.value } }))}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
+                      required
+                    />
+                    <button type="submit"
+                      className="w-full bg-[#1B2A4A] text-white px-3 py-1.5 rounded-lg text-sm hover:bg-[#243660] transition">
+                      Create Admin
+                    </button>
+                  </form>
+                )}
               </div>
             ))}
           </div>
