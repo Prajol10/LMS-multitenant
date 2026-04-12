@@ -1,0 +1,277 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5071/api';
+
+export default function Dashboard() {
+  const [activeTab, setActiveTab] = useState('notices');
+  const [notices, setNotices] = useState([]);
+  const [gallery, setGallery] = useState([]);
+  const [schoolInfo, setSchoolInfo] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [noticeForm, setNoticeForm] = useState({ title: '', content: '', isImportant: false });
+  const [galleryForm, setGalleryForm] = useState({ imageUrl: '', caption: '' });
+  const [showNoticeForm, setShowNoticeForm] = useState(false);
+  const [showGalleryForm, setShowGalleryForm] = useState(false);
+  const [message, setMessage] = useState('');
+  const navigate = useNavigate();
+  const token = localStorage.getItem('token');
+  const tenantId = localStorage.getItem('tenantId');
+
+  useEffect(() => { fetchData(); }, []);
+
+  const fetchData = async () => {
+    try {
+      const res = await fetch(`${API}/admin/school`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const school = await res.json();
+      setSchoolInfo(school);
+
+      const noticesRes = await fetch(`${API}/school/${school.subdomain}/notices`);
+      const noticesData = await noticesRes.json();
+      setNotices(noticesData);
+
+      const galleryRes = await fetch(`${API}/school/${school.subdomain}/gallery`);
+      const galleryData = await galleryRes.json();
+      setGallery(galleryData);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addNotice = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`${API}/notice`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(noticeForm)
+      });
+      if (!res.ok) throw new Error('Failed to add notice');
+      setMessage('Notice added!');
+      setShowNoticeForm(false);
+      setNoticeForm({ title: '', content: '', isImportant: false });
+      fetchData();
+    } catch (err) { setMessage(err.message); }
+  };
+
+  const deleteNotice = async (id) => {
+    if (!confirm('Delete this notice?')) return;
+    try {
+      await fetch(`${API}/notice/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchData();
+    } catch (err) { console.error(err); }
+  };
+
+  const addGalleryImage = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`${API}/gallery`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(galleryForm)
+      });
+      if (!res.ok) throw new Error('Failed to add image');
+      setMessage('Image added!');
+      setShowGalleryForm(false);
+      setGalleryForm({ imageUrl: '', caption: '' });
+      fetchData();
+    } catch (err) { setMessage(err.message); }
+  };
+
+  const deleteGalleryImage = async (id) => {
+    if (!confirm('Delete this image?')) return;
+    try {
+      await fetch(`${API}/gallery/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchData();
+    } catch (err) { console.error(err); }
+  };
+
+  const logout = () => {
+    localStorage.clear();
+    navigate('/admin/login');
+  };
+
+  if (loading) return (
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <p className="text-gray-500">Loading...</p>
+    </div>
+  );
+
+  return (
+    <div className="flex min-h-screen bg-gray-100">
+      <div className="w-64 bg-[#1B2A4A] text-white flex flex-col">
+        <div className="p-6 border-b border-[#243660]">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mb-2"
+            style={{ backgroundColor: schoolInfo?.primaryColor || '#C9A84C' }}>
+            {schoolInfo?.schoolName?.[0] || 'S'}
+          </div>
+          <h2 className="text-lg font-bold">{schoolInfo?.schoolName || 'School'}</h2>
+          <p className="text-blue-300 text-sm">Admin Panel</p>
+        </div>
+        <nav className="flex-1 p-4 space-y-2">
+          {['notices', 'gallery', 'info'].map(tab => (
+            <button key={tab} onClick={() => setActiveTab(tab)}
+              className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition capitalize ${activeTab === tab ? 'bg-[#243660]' : 'hover:bg-[#243660]/50'}`}>
+              {tab === 'info' ? 'School Info' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
+          ))}
+        </nav>
+        <div className="p-4">
+          <button onClick={logout} className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition">
+            Logout
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-1 p-8">
+        {message && (
+          <div className="mb-4 px-4 py-3 bg-green-50 text-green-600 rounded-lg text-sm">
+            {message} <button onClick={() => setMessage('')} className="ml-2 text-green-400">✕</button>
+          </div>
+        )}
+
+        {activeTab === 'notices' && (
+          <div>
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl font-bold text-[#1B2A4A]">Notices</h1>
+              <button onClick={() => setShowNoticeForm(!showNoticeForm)}
+                className="bg-[#1B2A4A] text-white px-4 py-2 rounded-lg hover:bg-[#243660] transition">
+                {showNoticeForm ? 'Cancel' : '+ Add Notice'}
+              </button>
+            </div>
+
+            {showNoticeForm && (
+              <div className="bg-white rounded-xl shadow p-6 mb-6">
+                <form onSubmit={addNotice} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                    <input value={noticeForm.title} onChange={e => setNoticeForm({...noticeForm, title: e.target.value})}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" required />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                    <textarea value={noticeForm.content} onChange={e => setNoticeForm({...noticeForm, content: e.target.value})}
+                      rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" required />
+                  </div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={noticeForm.isImportant}
+                      onChange={e => setNoticeForm({...noticeForm, isImportant: e.target.checked})}
+                      className="w-4 h-4" />
+                    <span className="text-sm font-medium text-gray-700">Mark as Important</span>
+                  </label>
+                  <button type="submit" className="bg-[#1B2A4A] text-white px-6 py-2 rounded-lg hover:bg-[#243660] transition">
+                    Add Notice
+                  </button>
+                </form>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              {notices.length === 0 ? (
+                <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">No notices yet</div>
+              ) : notices.map(notice => (
+                <div key={notice.id} className={`bg-white rounded-xl shadow p-5 border-l-4 ${notice.isImportant ? 'border-red-500' : 'border-gray-200'}`}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-bold text-gray-800">{notice.title}</h3>
+                        {notice.isImportant && <span className="px-2 py-0.5 bg-red-100 text-red-600 text-xs rounded-full font-medium">Important</span>}
+                      </div>
+                      <p className="text-gray-600 text-sm">{notice.content}</p>
+                      <p className="text-gray-400 text-xs mt-2">{new Date(notice.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <button onClick={() => deleteNotice(notice.id)}
+                      className="text-red-400 hover:text-red-600 transition ml-4 text-sm">Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'gallery' && (
+          <div>
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl font-bold text-[#1B2A4A]">Gallery</h1>
+              <button onClick={() => setShowGalleryForm(!showGalleryForm)}
+                className="bg-[#1B2A4A] text-white px-4 py-2 rounded-lg hover:bg-[#243660] transition">
+                {showGalleryForm ? 'Cancel' : '+ Add Image'}
+              </button>
+            </div>
+
+            {showGalleryForm && (
+              <div className="bg-white rounded-xl shadow p-6 mb-6">
+                <form onSubmit={addGalleryImage} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                    <input value={galleryForm.imageUrl} onChange={e => setGalleryForm({...galleryForm, imageUrl: e.target.value})}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
+                      placeholder="https://images.unsplash.com/..." required />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Caption</label>
+                    <input value={galleryForm.caption} onChange={e => setGalleryForm({...galleryForm, caption: e.target.value})}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                  </div>
+                  <button type="submit" className="bg-[#1B2A4A] text-white px-6 py-2 rounded-lg hover:bg-[#243660] transition">
+                    Add Image
+                  </button>
+                </form>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {gallery.length === 0 ? (
+                <div className="col-span-3 bg-white rounded-xl shadow p-8 text-center text-gray-400">No images yet</div>
+              ) : gallery.map(img => (
+                <div key={img.id} className="bg-white rounded-xl shadow overflow-hidden">
+                  <img src={img.imageUrl} alt={img.caption} className="w-full h-48 object-cover" />
+                  <div className="p-3 flex justify-between items-center">
+                    <p className="text-sm text-gray-600 truncate">{img.caption}</p>
+                    <button onClick={() => deleteGalleryImage(img.id)}
+                      className="text-red-400 hover:text-red-600 transition text-sm ml-2">Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'info' && schoolInfo && (
+          <div>
+            <h1 className="text-2xl font-bold text-[#1B2A4A] mb-6">School Information</h1>
+            <div className="bg-white rounded-xl shadow p-6 space-y-4">
+              {[
+                { label: 'School Name', value: schoolInfo.schoolName },
+                { label: 'Subdomain', value: schoolInfo.subdomain },
+                { label: 'Address', value: schoolInfo.address },
+                { label: 'Phone', value: schoolInfo.phone },
+                { label: 'Email', value: schoolInfo.email },
+                { label: 'Established Year', value: schoolInfo.establishedYear },
+              ].map(({ label, value }) => (
+                <div key={label} className="border-b border-gray-100 pb-3">
+                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">{label}</p>
+                  <p className="text-gray-800 mt-1">{value || 'Not set'}</p>
+                </div>
+              ))}
+              <div>
+                <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">About</p>
+                <p className="text-gray-800 mt-1">{schoolInfo.aboutText || 'Not set'}</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

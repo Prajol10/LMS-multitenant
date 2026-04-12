@@ -50,7 +50,7 @@ namespace SchoolWebsite.Controllers
                 CreatedAt = notice.CreatedAt
             };
 
-            return CreatedAtAction(nameof(GetNoticesByTenant), new { tenantId = tenantId }, noticeDto);
+            return CreatedAtAction(nameof(CreateNotice), new { id = notice.Id }, noticeDto);
         }
 
         // GET: api/notice/{tenantId}

@@ -165,7 +165,7 @@ namespace SchoolWebsite.Controllers
             }
 
             // Hash password
-            string passwordHash = HashPassword(createAdminDto.Password);
+            string passwordHash = BCrypt.Net.BCrypt.HashPassword(createAdminDto.Password);
 
             var adminUser = new AdminUser
             {
