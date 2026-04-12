@@ -115,7 +115,7 @@ export default function LandingPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {schools.filter(s => s.isActive).map(school => (
-                
+                <a
                   key={school.id}
                   href={`https://lmsschool.netlify.app?school=${school.subdomain}`}
                   target="_blank"
