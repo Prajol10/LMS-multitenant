@@ -17,7 +17,27 @@ namespace SchoolWebsite.Controllers
             _context = context;
         }
 
-        [HttpGet("{subdomain}")]
+        [HttpGet("all")]
+        public async Task<ActionResult> GetAllPublic()
+        {
+            var schools = await _context.Tenants
+                .Where(t => t.IsActive)
+                .OrderBy(t => t.SchoolName)
+                .Select(t => new
+                {
+                    t.Id,
+                    t.SchoolName,
+                    t.Subdomain,
+                    t.PrimaryColor,
+                    t.AccentColor,
+                    t.LogoUrl,
+                    t.EstablishedYear
+                })
+                .ToListAsync();
+            return Ok(schools);
+        }
+
+                [HttpGet("{subdomain}")]
         public async Task<ActionResult<TenantDto>> GetSchoolBySubdomain(string subdomain)
         {
             var tenant = await _context.Tenants
