@@ -5,6 +5,7 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:5071/api';
 
 export default function Dashboard() {
   const { school } = useParams();
+  const storedSchool = localStorage.getItem('school') || school;
   const [activeTab, setActiveTab] = useState('notices');
   const [notices, setNotices] = useState([]);
   const [gallery, setGallery] = useState([]);
@@ -132,7 +133,7 @@ export default function Dashboard() {
 
   const logout = () => {
     localStorage.clear();
-    navigate(`/${school}/admin`);
+    navigate(`/${storedSchool}/admin`);
   };
 
   if (loading) return (
@@ -347,6 +348,13 @@ export default function Dashboard() {
                     <input value={infoForm.websiteUrl} onChange={e => setInfoForm({...infoForm, websiteUrl: e.target.value})}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
                       placeholder="https://..." />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Google Maps Embed URL</label>
+                    <input value={infoForm.mapEmbedUrl || ''} onChange={e => setInfoForm({...infoForm, mapEmbedUrl: e.target.value})}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
+                      placeholder="https://www.google.com/maps/embed?pb=..." />
+                    <p className="text-xs text-gray-400 mt-1">Go to Google Maps → Share → Embed a map → copy the src URL only</p>
                   </div>
                   <div className="flex gap-3">
                     <button type="submit" disabled={savingInfo}
