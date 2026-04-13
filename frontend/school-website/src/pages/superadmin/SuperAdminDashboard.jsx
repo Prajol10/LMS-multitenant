@@ -60,7 +60,7 @@ export default function SuperAdminDashboard() {
 
 
   const handleDeleteSchool = async (schoolId, schoolName) => {
-    if (!confirm(`Are you sure you want to deactivate "${schoolName}"? This will hide it from the public.`)) return;
+    if (!confirm(`school.isActive ? 'Are you sure you want to deactivate' : 'Activate "${schoolName}"? This will hide it from the public.`)) return;
     try {
       const res = await fetch(`${API}/superadmin/schools/${schoolId}`, {
         method: 'DELETE',
@@ -226,13 +226,11 @@ export default function SuperAdminDashboard() {
                     className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium hover:bg-blue-200 transition">
                     View Site
                   </a>
-                  {school.isActive && (
-                    <button
-                      onClick={() => handleDeleteSchool(school.id, school.schoolName)}
-                      className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium hover:bg-red-200 transition">
-                      Deactivate
-                    </button>
-                  )}
+                  <button
+                    onClick={() => handleDeleteSchool(school.id, school.schoolName)}
+                    className={`px-2 py-1 rounded-full text-xs font-medium transition ${school.isActive ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}>
+                    {school.isActive ? 'Deactivate' : 'Activate'}
+                  </button>
                 </div>
 
                 <button

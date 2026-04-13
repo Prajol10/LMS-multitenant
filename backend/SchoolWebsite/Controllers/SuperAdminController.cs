@@ -138,7 +138,7 @@ namespace SchoolWebsite.Controllers
                 return NotFound("School not found");
             }
 
-            tenant.IsActive = false;
+            tenant.IsActive = !tenant.IsActive;
             await _context.SaveChangesAsync();
 
             return NoContent();
