@@ -21,7 +21,7 @@ export default function LandingPage() {
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
-          setSchools(data.filter(s => s.isActive).map(s => ({
+          setSchools(data.map(s => ({
             name: s.schoolName || s.name,
             subdomain: s.subdomain,
             color: s.primaryColor || s.color,
