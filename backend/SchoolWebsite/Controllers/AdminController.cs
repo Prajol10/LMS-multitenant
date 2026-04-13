@@ -18,25 +18,18 @@ namespace SchoolWebsite.Controllers
             _context = context;
         }
 
-        // GET: api/admin/school
         [HttpGet("school")]
         [Authorize]
         public async Task<ActionResult<TenantDto>> GetOwnSchool()
         {
-            // Get tenantId from claims
             var tenantIdClaim = User.FindFirst("TenantId")?.Value;
             if (string.IsNullOrEmpty(tenantIdClaim) || !int.TryParse(tenantIdClaim, out int tenantId))
-            {
                 return Unauthorized("Invalid tenant");
-            }
 
             var tenant = await _context.Tenants.FindAsync(tenantId);
-            if (tenant == null)
-            {
-                return NotFound("School not found");
-            }
+            if (tenant == null) return NotFound("School not found");
 
-            var tenantDto = new TenantDto
+            return Ok(new TenantDto
             {
                 Id = tenant.Id,
                 SchoolName = tenant.SchoolName,
@@ -49,32 +42,25 @@ namespace SchoolWebsite.Controllers
                 Phone = tenant.Phone,
                 Email = tenant.Email,
                 EstablishedYear = tenant.EstablishedYear,
+                FacebookUrl = tenant.FacebookUrl,
+                InstagramUrl = tenant.InstagramUrl,
+                WebsiteUrl = tenant.WebsiteUrl,
                 IsActive = tenant.IsActive,
                 CreatedAt = tenant.CreatedAt
-            };
-
-            return Ok(tenantDto);
+            });
         }
 
-        // PUT: api/admin/school
         [HttpPut("school")]
         [Authorize]
         public async Task<IActionResult> UpdateOwnSchool(UpdateTenantDto updateTenantDto)
         {
-            // Get tenantId from claims
             var tenantIdClaim = User.FindFirst("TenantId")?.Value;
             if (string.IsNullOrEmpty(tenantIdClaim) || !int.TryParse(tenantIdClaim, out int tenantId))
-            {
                 return Unauthorized("Invalid tenant");
-            }
 
             var tenant = await _context.Tenants.FindAsync(tenantId);
-            if (tenant == null)
-            {
-                return NotFound("School not found");
-            }
+            if (tenant == null) return NotFound("School not found");
 
-            // Update only allowed fields
             tenant.SchoolName = updateTenantDto.SchoolName ?? tenant.SchoolName;
             tenant.LogoUrl = updateTenantDto.LogoUrl ?? tenant.LogoUrl;
             tenant.PrimaryColor = updateTenantDto.PrimaryColor ?? tenant.PrimaryColor;
@@ -84,10 +70,11 @@ namespace SchoolWebsite.Controllers
             tenant.Phone = updateTenantDto.Phone ?? tenant.Phone;
             tenant.Email = updateTenantDto.Email ?? tenant.Email;
             tenant.EstablishedYear = updateTenantDto.EstablishedYear ?? tenant.EstablishedYear;
-            tenant.IsActive = updateTenantDto.IsActive ?? tenant.IsActive;
+            tenant.FacebookUrl = updateTenantDto.FacebookUrl ?? tenant.FacebookUrl;
+            tenant.InstagramUrl = updateTenantDto.InstagramUrl ?? tenant.InstagramUrl;
+            tenant.WebsiteUrl = updateTenantDto.WebsiteUrl ?? tenant.WebsiteUrl;
 
             await _context.SaveChangesAsync();
-
             return NoContent();
         }
     }
