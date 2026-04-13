@@ -58,6 +58,21 @@ export default function SuperAdminDashboard() {
     }
   };
 
+
+  const handleDeleteSchool = async (schoolId, schoolName) => {
+    if (!confirm(`Are you sure you want to deactivate "${schoolName}"? This will hide it from the public.`)) return;
+    try {
+      const res = await fetch(`${API}/superadmin/schools/${schoolId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to deactivate school');
+      fetchSchools();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  };
+
   const toggleAdminForm = (schoolId) => {
     setAdminForms(prev => ({
       ...prev,
@@ -211,6 +226,13 @@ export default function SuperAdminDashboard() {
                     className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium hover:bg-blue-200 transition">
                     View Site
                   </a>
+                  {school.isActive && (
+                    <button
+                      onClick={() => handleDeleteSchool(school.id, school.schoolName)}
+                      className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium hover:bg-red-200 transition">
+                      Deactivate
+                    </button>
+                  )}
                 </div>
 
                 <button

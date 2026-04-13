@@ -17,15 +17,15 @@ export default function LandingPage() {
   const [loadingSchools, setLoadingSchools] = useState(true);
 
   useEffect(() => {
-    fetch(`${API}/superadmin/schools`)
+    fetch(`${API}/school/all`)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
           setSchools(data.filter(s => s.isActive).map(s => ({
-            name: s.schoolName,
+            name: s.schoolName || s.name,
             subdomain: s.subdomain,
-            color: s.primaryColor,
-            est: s.establishedYear,
+            color: s.primaryColor || s.color,
+            est: s.establishedYear || s.est,
             logoUrl: s.logoUrl
           })));
         }
