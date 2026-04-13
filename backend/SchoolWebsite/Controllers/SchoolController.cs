@@ -39,6 +39,10 @@ namespace SchoolWebsite.Controllers
                 Phone = tenant.Phone,
                 Email = tenant.Email,
                 EstablishedYear = tenant.EstablishedYear,
+                MapEmbedUrl = tenant.MapEmbedUrl,
+                FacebookUrl = tenant.FacebookUrl,
+                InstagramUrl = tenant.InstagramUrl,
+                WebsiteUrl = tenant.WebsiteUrl,
                 IsActive = tenant.IsActive,
                 CreatedAt = tenant.CreatedAt
             });
@@ -132,6 +136,10 @@ namespace SchoolWebsite.Controllers
                 Phone = tenant.Phone,
                 Email = tenant.Email,
                 EstablishedYear = tenant.EstablishedYear,
+                MapEmbedUrl = tenant.MapEmbedUrl,
+                FacebookUrl = tenant.FacebookUrl,
+                InstagramUrl = tenant.InstagramUrl,
+                WebsiteUrl = tenant.WebsiteUrl,
                 IsActive = tenant.IsActive,
                 CreatedAt = tenant.CreatedAt
             });
