@@ -3,29 +3,20 @@ import { useTenant } from '../context/TenantContext';
 
 const Contact = () => {
   const { tenant } = useTenant();
-
   if (!tenant) return null;
 
   return (
     <section id="contact" className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Contact Us
-          </h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Contact Us</h2>
           <div className="w-20 h-1 bg-yellow-500 mx-auto"></div>
-          <p className="mt-4 text-xl text-gray-600">
-            Get in touch with us
-          </p>
+          <p className="mt-4 text-xl text-gray-600">Get in touch with us</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Contact Information */}
           <div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-6">
-              School Information
-            </h3>
-            
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">School Information</h3>
             <div className="space-y-6">
               <div className="flex items-start">
                 <div className="flex-shrink-0 bg-blue-100 p-3 rounded-lg">
@@ -36,9 +27,7 @@ const Contact = () => {
                 </div>
                 <div className="ml-4">
                   <h4 className="text-lg font-medium text-gray-900">Address</h4>
-                  <p className="mt-1 text-gray-600">
-                    {tenant.address || 'Address not available'}
-                  </p>
+                  <p className="mt-1 text-gray-600">{tenant.address || 'Address not available'}</p>
                 </div>
               </div>
 
@@ -50,9 +39,7 @@ const Contact = () => {
                 </div>
                 <div className="ml-4">
                   <h4 className="text-lg font-medium text-gray-900">Phone</h4>
-                  <p className="mt-1 text-gray-600">
-                    {tenant.phone || 'Phone number not available'}
-                  </p>
+                  <p className="mt-1 text-gray-600">{tenant.phone || 'Phone not available'}</p>
                 </div>
               </div>
 
@@ -64,86 +51,81 @@ const Contact = () => {
                 </div>
                 <div className="ml-4">
                   <h4 className="text-lg font-medium text-gray-900">Email</h4>
-                  <p className="mt-1 text-gray-600">
-                    {tenant.email || 'Email not available'}
-                  </p>
+                  <p className="mt-1 text-gray-600">{tenant.email || 'Email not available'}</p>
                 </div>
               </div>
+
+              {(tenant.facebookUrl || tenant.instagramUrl || tenant.websiteUrl) && (
+                <div className="flex items-start">
+                  <div className="flex-shrink-0 bg-yellow-100 p-3 rounded-lg">
+                    <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                  </div>
+                  <div className="ml-4">
+                    <h4 className="text-lg font-medium text-gray-900">Follow Us</h4>
+                    <div className="flex gap-3 mt-2">
+                      {tenant.facebookUrl && (
+                        <a href={tenant.facebookUrl} target="_blank" rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 text-sm font-medium">Facebook</a>
+                      )}
+                      {tenant.instagramUrl && (
+                        <a href={tenant.instagramUrl} target="_blank" rel="noopener noreferrer"
+                          className="text-pink-600 hover:text-pink-800 text-sm font-medium">Instagram</a>
+                      )}
+                      {tenant.websiteUrl && (
+                        <a href={tenant.websiteUrl} target="_blank" rel="noopener noreferrer"
+                          className="text-gray-600 hover:text-gray-800 text-sm font-medium">Website</a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Map Placeholder */}
-            <div className="mt-12">
+            <div className="mt-8">
               <h4 className="text-lg font-medium text-gray-900 mb-4">Find Us</h4>
-              <div className="bg-gray-200 border-2 border-dashed rounded-xl w-full h-64 flex items-center justify-center">
-                <span className="text-gray-500">Google Maps Embed</span>
-              </div>
+              {tenant.mapEmbedUrl ? (
+                <iframe
+                  src={tenant.mapEmbedUrl}
+                  width="100%"
+                  height="256"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  className="rounded-xl"
+                />
+              ) : (
+                <div className="bg-gray-200 border-2 border-dashed rounded-xl w-full h-64 flex items-center justify-center">
+                  <span className="text-gray-500">Map not configured yet</span>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Contact Form */}
           <div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-6">
-              Send us a message
-            </h3>
-            
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">Send us a message</h3>
             <form className="space-y-6">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Your full name"
-                />
+                <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                <input type="text" className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Your full name" />
               </div>
-
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="your.email@example.com"
-                />
+                <label className="block text-sm font-medium text-gray-700">Email Address</label>
+                <input type="email" className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="your.email@example.com" />
               </div>
-
               <div>
-                <label htmlFor="subject" className="block text-sm font-medium text-gray-700">
-                  Subject
-                </label>
-                <input
-                  type="text"
-                  id="subject"
-                  className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Subject of your message"
-                />
+                <label className="block text-sm font-medium text-gray-700">Subject</label>
+                <input type="text" className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Subject of your message" />
               </div>
-
               <div>
-                <label htmlFor="message" className="block text-sm font-medium text-gray-700">
-                  Message
-                </label>
-                <textarea
-                  id="message"
-                  rows={5}
-                  className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Your message here..."
-                ></textarea>
+                <label className="block text-sm font-medium text-gray-700">Message</label>
+                <textarea rows={5} className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Your message here..."></textarea>
               </div>
-
-              <div>
-                <button
-                  type="submit"
-                  className="w-full px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  style={{ backgroundColor: tenant.primaryColor }}
-                >
-                  Send Message
-                </button>
-              </div>
+              <button type="submit" className="w-full px-6 py-3 text-base font-medium rounded-lg text-white shadow-sm hover:opacity-90 transition"
+                style={{ backgroundColor: tenant.primaryColor }}>
+                Send Message
+              </button>
             </form>
           </div>
         </div>

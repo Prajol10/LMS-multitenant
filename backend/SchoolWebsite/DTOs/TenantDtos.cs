@@ -15,6 +15,7 @@ namespace SchoolWebsite.DTOs
         public string? FacebookUrl { get; set; }
         public string? InstagramUrl { get; set; }
         public string? WebsiteUrl { get; set; }
+        public string? MapEmbedUrl { get; set; }
     }
 
     public class UpdateTenantDto
@@ -32,6 +33,7 @@ namespace SchoolWebsite.DTOs
         public string? FacebookUrl { get; set; }
         public string? InstagramUrl { get; set; }
         public string? WebsiteUrl { get; set; }
+        public string? MapEmbedUrl { get; set; }
     }
 
     public class TenantDto
@@ -50,6 +52,7 @@ namespace SchoolWebsite.DTOs
         public string? FacebookUrl { get; set; }
         public string? InstagramUrl { get; set; }
         public string? WebsiteUrl { get; set; }
+        public string? MapEmbedUrl { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
     }

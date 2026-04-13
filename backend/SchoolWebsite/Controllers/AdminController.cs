@@ -45,6 +45,7 @@ namespace SchoolWebsite.Controllers
                 FacebookUrl = tenant.FacebookUrl,
                 InstagramUrl = tenant.InstagramUrl,
                 WebsiteUrl = tenant.WebsiteUrl,
+                MapEmbedUrl = tenant.MapEmbedUrl,
                 IsActive = tenant.IsActive,
                 CreatedAt = tenant.CreatedAt
             });
@@ -73,6 +74,7 @@ namespace SchoolWebsite.Controllers
             tenant.FacebookUrl = updateTenantDto.FacebookUrl ?? tenant.FacebookUrl;
             tenant.InstagramUrl = updateTenantDto.InstagramUrl ?? tenant.InstagramUrl;
             tenant.WebsiteUrl = updateTenantDto.WebsiteUrl ?? tenant.WebsiteUrl;
+            tenant.MapEmbedUrl = updateTenantDto.MapEmbedUrl ?? tenant.MapEmbedUrl;
 
             await _context.SaveChangesAsync();
             return NoContent();

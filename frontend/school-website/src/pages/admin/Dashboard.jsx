@@ -41,6 +41,7 @@ export default function Dashboard() {
         facebookUrl: s.facebookUrl || '',
         instagramUrl: s.instagramUrl || '',
         websiteUrl: s.websiteUrl || '',
+        mapEmbedUrl: s.mapEmbedUrl || '',
       });
 
       const noticesRes = await fetch(`${API}/school/${s.subdomain}/notices`);
