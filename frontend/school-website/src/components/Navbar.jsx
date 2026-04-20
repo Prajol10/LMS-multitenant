@@ -28,7 +28,7 @@ const Navbar = () => {
               <img 
                 src={tenant.logoUrl} 
                 alt={`${tenant.schoolName} Logo`} 
-                className="h-10 w-10 rounded-full object-contain"
+                className="h-10 w-10 rounded-full object-cover flex-shrink-0 border-2 border-white border-opacity-30"
               />
             ) : (
               <div className="bg-white h-10 w-10 rounded-full flex items-center justify-center">

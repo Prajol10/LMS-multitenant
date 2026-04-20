@@ -43,6 +43,8 @@ export default function Dashboard() {
         instagramUrl: s.instagramUrl || '',
         websiteUrl: s.websiteUrl || '',
         mapEmbedUrl: s.mapEmbedUrl || '',
+        videoUrl: s.videoUrl || '',
+        videoUrl: s.videoUrl || '',
       });
 
       const noticesRes = await fetch(`${API}/school/${s.subdomain}/notices`);
@@ -355,6 +357,13 @@ export default function Dashboard() {
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
                       placeholder="https://www.google.com/maps/embed?pb=..." />
                     <p className="text-xs text-gray-400 mt-1">Go to Google Maps → Share → Embed a map → copy the src URL only</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">School Video URL (YouTube)</label>
+                    <input value={infoForm.videoUrl || ''} onChange={e => setInfoForm({...infoForm, videoUrl: e.target.value})}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
+                      placeholder="https://www.youtube.com/watch?v=..." />
+                    <p className="text-xs text-gray-400 mt-1">Paste a YouTube video URL to show on the homepage</p>
                   </div>
                   <div className="flex gap-3">
                     <button type="submit" disabled={savingInfo}
