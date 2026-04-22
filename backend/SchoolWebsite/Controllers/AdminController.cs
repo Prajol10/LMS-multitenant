@@ -47,6 +47,7 @@ namespace SchoolWebsite.Controllers
                 WebsiteUrl = tenant.WebsiteUrl,
                 MapEmbedUrl = tenant.MapEmbedUrl,
                 VideoUrl = tenant.VideoUrl,
+                AboutImageUrl = tenant.AboutImageUrl,
                 IsActive = tenant.IsActive,
                 CreatedAt = tenant.CreatedAt
             });
@@ -77,6 +78,7 @@ namespace SchoolWebsite.Controllers
             tenant.WebsiteUrl = updateTenantDto.WebsiteUrl ?? tenant.WebsiteUrl;
             tenant.MapEmbedUrl = updateTenantDto.MapEmbedUrl ?? tenant.MapEmbedUrl;
             tenant.VideoUrl = updateTenantDto.VideoUrl ?? tenant.VideoUrl;
+            tenant.AboutImageUrl = updateTenantDto.AboutImageUrl ?? tenant.AboutImageUrl;
 
             await _context.SaveChangesAsync();
             return NoContent();

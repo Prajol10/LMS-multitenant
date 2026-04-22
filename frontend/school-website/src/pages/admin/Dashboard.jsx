@@ -45,7 +45,9 @@ export default function Dashboard() {
         websiteUrl: s.websiteUrl || '',
         mapEmbedUrl: s.mapEmbedUrl || '',
         videoUrl: s.videoUrl || '',
+        aboutImageUrl: s.aboutImageUrl || '',
         videoUrl: s.videoUrl || '',
+        aboutImageUrl: s.aboutImageUrl || '',
       });
 
       const noticesRes = await fetch(`${API}/school/${s.subdomain}/notices`);
@@ -251,10 +253,42 @@ export default function Dashboard() {
               <div className="bg-white rounded-xl shadow p-6 mb-6">
                 <form onSubmit={addGalleryImage} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                    <input value={galleryForm.imageUrl} onChange={e => setGalleryForm({...galleryForm, imageUrl: e.target.value})}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
-                      placeholder="https://images.unsplash.com/..." required />
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Upload Image</label>
+                    <div className="flex gap-3 mb-3">
+                      <button type="button"
+                        onClick={() => setGalleryForm({...galleryForm, uploadMode: 'url'})}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition ${!galleryForm.uploadMode || galleryForm.uploadMode === 'url' ? 'bg-[#1B2A4A] text-white' : 'bg-gray-100 text-gray-700'}`}>
+                        Paste URL
+                      </button>
+                      <button type="button"
+                        onClick={() => setGalleryForm({...galleryForm, uploadMode: 'file'})}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition ${galleryForm.uploadMode === 'file' ? 'bg-[#1B2A4A] text-white' : 'bg-gray-100 text-gray-700'}`}>
+                        Upload from Device
+                      </button>
+                    </div>
+                    {(!galleryForm.uploadMode || galleryForm.uploadMode === 'url') ? (
+                      <input value={galleryForm.imageUrl} onChange={e => setGalleryForm({...galleryForm, imageUrl: e.target.value})}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
+                        placeholder="https://images.unsplash.com/..." />
+                    ) : (
+                      <div>
+                        <input type="file" accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setGalleryForm({...galleryForm, imageUrl: reader.result, uploadMode: 'file'});
+                            };
+                            reader.readAsDataURL(file);
+                          }}
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2" />
+                        {galleryForm.imageUrl && galleryForm.uploadMode === 'file' && (
+                          <img src={galleryForm.imageUrl} alt="Preview" className="mt-2 h-32 object-cover rounded-lg" />
+                        )}
+                        <p className="text-xs text-gray-400 mt-1">Note: Image will be stored as base64. For best performance use URL option.</p>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Caption</label>
@@ -339,6 +373,13 @@ export default function Dashboard() {
                     <input value={infoForm.logoUrl} onChange={e => setInfoForm({...infoForm, logoUrl: e.target.value})}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
                       placeholder="https://..." />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">About Section Image URL</label>
+                    <input value={infoForm.aboutImageUrl || ''} onChange={e => setInfoForm({...infoForm, aboutImageUrl: e.target.value})}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
+                      placeholder="https://images.unsplash.com/..." />
+                    <p className="text-xs text-gray-400 mt-1">This image shows in the About section of your public website</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Facebook URL</label>

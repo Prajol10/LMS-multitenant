@@ -31,6 +31,7 @@ namespace SchoolWebsite.Models
         public string? WebsiteUrl { get; set; }
         public string? MapEmbedUrl { get; set; }
         public string? VideoUrl { get; set; }
+        public string? AboutImageUrl { get; set; }
         
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
