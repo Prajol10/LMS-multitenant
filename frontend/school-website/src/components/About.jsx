@@ -1,4 +1,5 @@
 import React from 'react';
+import { marked } from 'marked';
 import { useTenant } from '../context/TenantContext';
 
 const About = () => {
@@ -23,7 +24,7 @@ const About = () => {
             </h3>
             <div 
               className="prose prose-lg text-gray-700 mb-8"
-              dangerouslySetInnerHTML={{ __html: tenant.aboutText || 'No description available.' }}
+              dangerouslySetInnerHTML={{ __html: marked(tenant.aboutText || 'No description available.') }}
             />
             
             <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mt-10">

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import MDEditor from '@uiw/react-md-editor';
 import { useNavigate, useParams } from 'react-router-dom';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5071/api';
@@ -324,8 +325,14 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">About</label>
-                    <textarea value={infoForm.aboutText} onChange={e => setInfoForm({...infoForm, aboutText: e.target.value})}
-                      rows={4} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                    <div data-color-mode="light">
+                      <MDEditor
+                        value={infoForm.aboutText}
+                        onChange={val => setInfoForm({...infoForm, aboutText: val || ''})}
+                        preview="edit"
+                        height={200}
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
@@ -394,7 +401,9 @@ export default function Dashboard() {
                 ))}
                 <div>
                   <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">About</p>
-                  <p className="text-gray-800 mt-1">{schoolInfo.aboutText || 'Not set'}</p>
+                  <div className="text-gray-800 mt-1 prose prose-sm max-w-none" data-color-mode="light">
+                    <MDEditor.Markdown source={schoolInfo.aboutText || 'Not set'} />
+                  </div>
                 </div>
               </div>
             )}
