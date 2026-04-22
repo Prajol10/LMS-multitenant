@@ -17,6 +17,8 @@ export default function LandingPage() {
   const [loadingSchools, setLoadingSchools] = useState(true);
 
   useEffect(() => {
+    // Show fallback immediately, then update with real data
+    setLoadingSchools(false);
     fetch(`${API}/school/all`)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(data => {
@@ -30,8 +32,7 @@ export default function LandingPage() {
           })));
         }
       })
-      .catch(() => {})
-      .finally(() => setLoadingSchools(false));
+      .catch(() => {});
   }, []);
 
   return (

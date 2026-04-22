@@ -49,7 +49,7 @@ const Hero = () => {
         <div
           className="absolute inset-0"
           style={{
-            background: `linear-gradient(135deg, ${tenant.primaryColor}dd 0%, ${tenant.primaryColor}99 50%, rgba(0,0,0,0.5) 100%)`
+            background: `linear-gradient(135deg, ${tenant.primaryColor}99 0%, ${tenant.primaryColor}66 50%, rgba(0,0,0,0.4) 100%)`
           }}
         />
 
@@ -118,7 +118,7 @@ const Hero = () => {
                 <p className="text-sm opacity-75">Established</p>
               </div>
               <div className="text-center border-x border-white border-opacity-30">
-                <p className="text-3xl font-bold">500+</p>
+                <p className="text-3xl font-bold">{tenant.totalStudents ? tenant.totalStudents + "+" : "500+"}</p>
                 <p className="text-sm opacity-75">Students</p>
               </div>
               <div className="text-center">

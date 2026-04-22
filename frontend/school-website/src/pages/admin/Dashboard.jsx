@@ -375,11 +375,48 @@ export default function Dashboard() {
                       placeholder="https://..." />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">About Section Image URL</label>
-                    <input value={infoForm.aboutImageUrl || ''} onChange={e => setInfoForm({...infoForm, aboutImageUrl: e.target.value})}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
-                      placeholder="https://images.unsplash.com/..." />
-                    <p className="text-xs text-gray-400 mt-1">This image shows in the About section of your public website</p>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">About Section Image</label>
+                    <div className="flex gap-3 mb-3">
+                      <button type="button"
+                        onClick={() => setInfoForm({...infoForm, aboutImageMode: 'url'})}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition ${!infoForm.aboutImageMode || infoForm.aboutImageMode === 'url' ? 'bg-[#1B2A4A] text-white' : 'bg-gray-100 text-gray-700'}`}>
+                        Paste URL
+                      </button>
+                      <button type="button"
+                        onClick={() => setInfoForm({...infoForm, aboutImageMode: 'file'})}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition ${infoForm.aboutImageMode === 'file' ? 'bg-[#1B2A4A] text-white' : 'bg-gray-100 text-gray-700'}`}>
+                        Upload from Device
+                      </button>
+                    </div>
+                    {(!infoForm.aboutImageMode || infoForm.aboutImageMode === 'url') ? (
+                      <input value={infoForm.aboutImageUrl || ''} onChange={e => setInfoForm({...infoForm, aboutImageUrl: e.target.value})}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
+                        placeholder="https://images.unsplash.com/..." />
+                    ) : (
+                      <div>
+                        <input type="file" accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setInfoForm({...infoForm, aboutImageUrl: reader.result, aboutImageMode: 'file'});
+                            };
+                            reader.readAsDataURL(file);
+                          }}
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2" />
+                        {infoForm.aboutImageUrl && infoForm.aboutImageMode === 'file' && (
+                          <img src={infoForm.aboutImageUrl} alt="Preview" className="mt-2 h-32 w-full object-cover rounded-lg" />
+                        )}
+                      </div>
+                    )}
+                    <div className="mt-2 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <p className="text-xs font-medium text-blue-700 mb-1">📐 Recommended Image Size</p>
+                      <p className="text-xs text-blue-600">Width: 800px or more</p>
+                      <p className="text-xs text-blue-600">Height: 500px or more</p>
+                      <p className="text-xs text-blue-600">Format: JPG or PNG</p>
+                      <p className="text-xs text-blue-600">This image appears in the About section of your public website</p>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Facebook URL</label>
