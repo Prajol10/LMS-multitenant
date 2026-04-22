@@ -23,7 +23,7 @@ const About = () => {
               Welcome to {tenant.schoolName}
             </h3>
             <div 
-              className="prose prose-lg text-gray-700 mb-8"
+              className="prose prose-lg prose-headings:text-gray-900 prose-headings:font-bold prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-p:text-gray-700 prose-strong:text-gray-900 prose-ul:list-disc prose-ol:list-decimal max-w-none mb-8"
               dangerouslySetInnerHTML={{ __html: marked(tenant.aboutText || 'No description available.') }}
             />
             
