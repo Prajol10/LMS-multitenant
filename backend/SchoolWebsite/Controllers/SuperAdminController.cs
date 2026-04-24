@@ -155,13 +155,13 @@ namespace SchoolWebsite.Controllers
                 return NotFound("School not found");
             }
 
-            // Check if admin already exists for this tenant
-            var existingAdmin = await _context.AdminUsers
-                .FirstOrDefaultAsync(u => u.TenantId == id && u.Role == "SchoolAdmin");
+            // Check if email already exists (prevent duplicate emails, but allow multiple admins)
+            var existingEmail = await _context.AdminUsers
+                .FirstOrDefaultAsync(u => u.Email == createAdminDto.Email);
 
-            if (existingAdmin != null)
+            if (existingEmail != null)
             {
-                return BadRequest("Admin already exists for this school");
+                return BadRequest("Email already in use");
             }
 
             // Hash password
@@ -179,7 +179,7 @@ namespace SchoolWebsite.Controllers
             _context.AdminUsers.Add(adminUser);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "School admin created successfully" });
+            return Ok(new { message = "School admin created successfully", adminId = adminUser.Id });
         }
 
         // Helper method to hash password
