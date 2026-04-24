@@ -46,8 +46,6 @@ export default function Dashboard() {
         mapEmbedUrl: s.mapEmbedUrl || '',
         videoUrl: s.videoUrl || '',
         aboutImageUrl: s.aboutImageUrl || '',
-        videoUrl: s.videoUrl || '',
-        aboutImageUrl: s.aboutImageUrl || '',
       });
 
       const noticesRes = await fetch(`${API}/school/${s.subdomain}/notices`);
@@ -369,10 +367,48 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
-                    <input value={infoForm.logoUrl} onChange={e => setInfoForm({...infoForm, logoUrl: e.target.value})}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
-                      placeholder="https://..." />
+                    <label className="block text-sm font-medium text-gray-700 mb-2">School Logo</label>
+                    <div className="flex gap-3 mb-3">
+                      <button type="button"
+                        onClick={() => setInfoForm({...infoForm, logoMode: 'url'})}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition ${!infoForm.logoMode || infoForm.logoMode === 'url' ? 'bg-[#1B2A4A] text-white' : 'bg-gray-100 text-gray-700'}`}>
+                        Paste URL
+                      </button>
+                      <button type="button"
+                        onClick={() => setInfoForm({...infoForm, logoMode: 'file'})}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition ${infoForm.logoMode === 'file' ? 'bg-[#1B2A4A] text-white' : 'bg-gray-100 text-gray-700'}`}>
+                        Upload from Device
+                      </button>
+                    </div>
+                    {(!infoForm.logoMode || infoForm.logoMode === 'url') ? (
+                      <input value={infoForm.logoUrl || ''} onChange={e => setInfoForm({...infoForm, logoUrl: e.target.value})}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
+                        placeholder="https://..." />
+                    ) : (
+                      <div>
+                        <input type="file" accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setInfoForm({...infoForm, logoUrl: reader.result, logoMode: 'file'});
+                            };
+                            reader.readAsDataURL(file);
+                          }}
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2" />
+                        {infoForm.logoUrl && infoForm.logoMode === 'file' && (
+                          <img src={infoForm.logoUrl} alt="Logo Preview" className="mt-2 h-20 object-contain rounded-lg border border-gray-200 p-2 bg-gray-50" />
+                        )}
+                      </div>
+                    )}
+                    <div className="mt-2 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <p className="text-xs font-medium text-blue-700 mb-1">📐 Recommended Logo Size</p>
+                      <p className="text-xs text-blue-600">Width: 200px – 400px</p>
+                      <p className="text-xs text-blue-600">Height: 200px – 400px (square works best)</p>
+                      <p className="text-xs text-blue-600">Format: PNG with transparent background preferred</p>
+                      <p className="text-xs text-blue-600">This logo appears in the navbar of your public website</p>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">About Section Image</label>
