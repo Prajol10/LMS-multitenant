@@ -89,8 +89,10 @@ export default function SuperAdminDashboard() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ email: form.email, password: form.password })
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || data || 'Failed to create admin');
+      const text = await res.text();
+      let data;
+      try { data = JSON.parse(text); } catch { data = { message: text }; }
+      if (!res.ok) throw new Error(data.message || text || 'Failed to create admin');
       setAdminMessages(prev => ({ ...prev, [schoolId]: '✅ Admin created! Email: ' + form.email }));
       setAdminForms(prev => ({ ...prev, [schoolId]: null }));
     } catch (err) {
