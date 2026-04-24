@@ -5,7 +5,7 @@
 namespace SchoolWebsite.Migrations
 {
     /// <inheritdoc />
-    public partial class AddAboutImageUrl : Migration
+    public partial class RemoveAdminRestriction : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

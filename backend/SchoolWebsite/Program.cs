@@ -50,12 +50,12 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
-// AUTO MIGRATE DATABASE ON STARTUP
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-}
+// AUTO MIGRATE DATABASE ON STARTUP - COMMENTED OUT (tables already exist)
+//using (var scope = app.Services.CreateScope())
+//{
+//    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+//    db.Database.Migrate();
+//}
 
 if (app.Environment.IsDevelopment())
 {

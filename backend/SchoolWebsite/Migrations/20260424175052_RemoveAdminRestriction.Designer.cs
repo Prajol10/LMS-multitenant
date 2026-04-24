@@ -12,8 +12,8 @@ using SchoolWebsite.Data;
 namespace SchoolWebsite.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260422102637_AddAboutImageUrl")]
-    partial class AddAboutImageUrl
+    [Migration("20260424175052_RemoveAdminRestriction")]
+    partial class RemoveAdminRestriction
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

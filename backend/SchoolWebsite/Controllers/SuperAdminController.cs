@@ -20,7 +20,6 @@ namespace SchoolWebsite.Controllers
             _context = context;
         }
 
-        // GET: api/superadmin/schools
         [HttpGet("schools")]
         [Authorize(Roles = "SuperAdmin")]
         public async Task<ActionResult<IEnumerable<TenantDto>>> GetAllSchools()
@@ -49,19 +48,15 @@ namespace SchoolWebsite.Controllers
             return Ok(tenantDtos);
         }
 
-        // POST: api/superadmin/schools
         [HttpPost("schools")]
         [Authorize(Roles = "SuperAdmin")]
         public async Task<ActionResult<TenantDto>> CreateSchool(CreateTenantDto createTenantDto)
         {
-            // Check if subdomain already exists
             var existingTenant = await _context.Tenants
                 .FirstOrDefaultAsync(t => t.Subdomain.ToLower() == createTenantDto.Subdomain.ToLower());
 
             if (existingTenant != null)
-            {
                 return BadRequest("Subdomain already exists");
-            }
 
             var tenant = new Tenant
             {
@@ -100,16 +95,13 @@ namespace SchoolWebsite.Controllers
             return CreatedAtAction(nameof(GetAllSchools), tenantDto);
         }
 
-        // PUT: api/superadmin/schools/{id}
         [HttpPut("schools/{id}")]
         [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> UpdateSchool(int id, UpdateTenantDto updateTenantDto)
         {
             var tenant = await _context.Tenants.FindAsync(id);
             if (tenant == null)
-            {
                 return NotFound("School not found");
-            }
 
             tenant.SchoolName = updateTenantDto.SchoolName ?? tenant.SchoolName;
             tenant.LogoUrl = updateTenantDto.LogoUrl ?? tenant.LogoUrl;
@@ -123,48 +115,37 @@ namespace SchoolWebsite.Controllers
             tenant.IsActive = updateTenantDto.IsActive ?? tenant.IsActive;
 
             await _context.SaveChangesAsync();
-
             return NoContent();
         }
 
-        // DELETE: api/superadmin/schools/{id}
         [HttpDelete("schools/{id}")]
         [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> DeactivateSchool(int id)
         {
             var tenant = await _context.Tenants.FindAsync(id);
             if (tenant == null)
-            {
                 return NotFound("School not found");
-            }
 
             tenant.IsActive = !tenant.IsActive;
             await _context.SaveChangesAsync();
-
             return NoContent();
         }
 
-        // POST: api/superadmin/schools/{id}/admin
         [HttpPost("schools/{id}/admin")]
         [Authorize(Roles = "SuperAdmin")]
         public async Task<ActionResult<object>> CreateSchoolAdmin(int id, [FromBody] CreateAdminUserDto createAdminDto)
         {
             var tenant = await _context.Tenants.FindAsync(id);
             if (tenant == null)
-            {
                 return NotFound("School not found");
-            }
 
-            // Check if email already exists (prevent duplicate emails, but allow multiple admins)
+            // FIX: Only block duplicate emails, allow multiple admins per school
             var existingEmail = await _context.AdminUsers
-                .FirstOrDefaultAsync(u => u.Email == createAdminDto.Email);
+                .FirstOrDefaultAsync(u => u.Email.ToLower() == createAdminDto.Email.ToLower());
 
             if (existingEmail != null)
-            {
-                return BadRequest("Email already in use");
-            }
+                return BadRequest("An admin with this email already exists");
 
-            // Hash password
             string passwordHash = BCrypt.Net.BCrypt.HashPassword(createAdminDto.Password);
 
             var adminUser = new AdminUser
@@ -179,10 +160,9 @@ namespace SchoolWebsite.Controllers
             _context.AdminUsers.Add(adminUser);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "School admin created successfully", adminId = adminUser.Id });
+            return Ok(new { message = "School admin created successfully" });
         }
 
-        // Helper method to hash password
         private string HashPassword(string password)
         {
             using (var sha256 = SHA256.Create())
@@ -193,7 +173,6 @@ namespace SchoolWebsite.Controllers
         }
     }
 
-    // DTO for creating admin user
     public class CreateAdminUserDto
     {
         public string Email { get; set; } = string.Empty;
