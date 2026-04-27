@@ -24,95 +24,67 @@ namespace SchoolWebsite.Controllers
         [Authorize(Roles = "SuperAdmin")]
         public async Task<ActionResult<IEnumerable<TenantDto>>> GetAllSchools()
         {
-            var tenants = await _context.Tenants
-                .OrderByDescending(t => t.CreatedAt)
-                .ToListAsync();
-
-            var tenantDtos = tenants.Select(tenant => new TenantDto
-            {
-                Id = tenant.Id,
-                SchoolName = tenant.SchoolName,
-                Subdomain = tenant.Subdomain,
-                LogoUrl = tenant.LogoUrl,
-                PrimaryColor = tenant.PrimaryColor,
-                AccentColor = tenant.AccentColor,
-                AboutText = tenant.AboutText,
-                Address = tenant.Address,
-                Phone = tenant.Phone,
-                Email = tenant.Email,
-                EstablishedYear = tenant.EstablishedYear,
-                IsActive = tenant.IsActive,
-                CreatedAt = tenant.CreatedAt
-            }).ToList();
-
-            return Ok(tenantDtos);
+            var tenants = await _context.Tenants.OrderByDescending(t => t.CreatedAt).ToListAsync();
+            return Ok(tenants.Select(MapToDto).ToList());
         }
 
         [HttpPost("schools")]
         [Authorize(Roles = "SuperAdmin")]
-        public async Task<ActionResult<TenantDto>> CreateSchool(CreateTenantDto createTenantDto)
+        public async Task<ActionResult<TenantDto>> CreateSchool(CreateTenantDto dto)
         {
-            var existingTenant = await _context.Tenants
-                .FirstOrDefaultAsync(t => t.Subdomain.ToLower() == createTenantDto.Subdomain.ToLower());
-
-            if (existingTenant != null)
-                return BadRequest("Subdomain already exists");
+            var existing = await _context.Tenants
+                .FirstOrDefaultAsync(t => t.Subdomain.ToLower() == dto.Subdomain.ToLower());
+            if (existing != null) return BadRequest("Subdomain already exists");
 
             var tenant = new Tenant
             {
-                SchoolName = createTenantDto.SchoolName,
-                Subdomain = createTenantDto.Subdomain.ToLower(),
-                LogoUrl = createTenantDto.LogoUrl,
-                PrimaryColor = createTenantDto.PrimaryColor,
-                AccentColor = createTenantDto.AccentColor,
-                AboutText = createTenantDto.AboutText,
-                Address = createTenantDto.Address,
-                Phone = createTenantDto.Phone,
-                Email = createTenantDto.Email,
-                EstablishedYear = createTenantDto.EstablishedYear
+                SchoolName = dto.SchoolName,
+                Subdomain = dto.Subdomain.ToLower(),
+                LogoUrl = dto.LogoUrl,
+                BannerUrl = dto.BannerUrl,
+                PrimaryColor = dto.PrimaryColor,
+                AccentColor = dto.AccentColor,
+                AboutText = dto.AboutText,
+                Address = dto.Address,
+                Phone = dto.Phone,
+                Email = dto.Email,
+                EstablishedYear = dto.EstablishedYear,
+                FacebookUrl = dto.FacebookUrl,
+                InstagramUrl = dto.InstagramUrl,
+                WebsiteUrl = dto.WebsiteUrl,
+                MapEmbedUrl = dto.MapEmbedUrl,
+                VideoUrl = dto.VideoUrl,
+                AboutImageUrl = dto.AboutImageUrl
             };
-
             _context.Tenants.Add(tenant);
             await _context.SaveChangesAsync();
-
-            var tenantDto = new TenantDto
-            {
-                Id = tenant.Id,
-                SchoolName = tenant.SchoolName,
-                Subdomain = tenant.Subdomain,
-                LogoUrl = tenant.LogoUrl,
-                PrimaryColor = tenant.PrimaryColor,
-                AccentColor = tenant.AccentColor,
-                AboutText = tenant.AboutText,
-                Address = tenant.Address,
-                Phone = tenant.Phone,
-                Email = tenant.Email,
-                EstablishedYear = tenant.EstablishedYear,
-                IsActive = tenant.IsActive,
-                CreatedAt = tenant.CreatedAt
-            };
-
-            return CreatedAtAction(nameof(GetAllSchools), tenantDto);
+            return CreatedAtAction(nameof(GetAllSchools), MapToDto(tenant));
         }
 
         [HttpPut("schools/{id}")]
         [Authorize(Roles = "SuperAdmin")]
-        public async Task<IActionResult> UpdateSchool(int id, UpdateTenantDto updateTenantDto)
+        public async Task<IActionResult> UpdateSchool(int id, UpdateTenantDto dto)
         {
             var tenant = await _context.Tenants.FindAsync(id);
-            if (tenant == null)
-                return NotFound("School not found");
+            if (tenant == null) return NotFound("School not found");
 
-            tenant.SchoolName = updateTenantDto.SchoolName ?? tenant.SchoolName;
-            tenant.LogoUrl = updateTenantDto.LogoUrl ?? tenant.LogoUrl;
-            tenant.PrimaryColor = updateTenantDto.PrimaryColor ?? tenant.PrimaryColor;
-            tenant.AccentColor = updateTenantDto.AccentColor ?? tenant.AccentColor;
-            tenant.AboutText = updateTenantDto.AboutText ?? tenant.AboutText;
-            tenant.Address = updateTenantDto.Address ?? tenant.Address;
-            tenant.Phone = updateTenantDto.Phone ?? tenant.Phone;
-            tenant.Email = updateTenantDto.Email ?? tenant.Email;
-            tenant.EstablishedYear = updateTenantDto.EstablishedYear ?? tenant.EstablishedYear;
-            tenant.IsActive = updateTenantDto.IsActive ?? tenant.IsActive;
+            tenant.SchoolName = dto.SchoolName ?? tenant.SchoolName;
+            tenant.LogoUrl = dto.LogoUrl ?? tenant.LogoUrl;
+            tenant.BannerUrl = dto.BannerUrl ?? tenant.BannerUrl;
+            tenant.PrimaryColor = dto.PrimaryColor ?? tenant.PrimaryColor;
+            tenant.AccentColor = dto.AccentColor ?? tenant.AccentColor;
+            tenant.AboutText = dto.AboutText ?? tenant.AboutText;
+            tenant.Address = dto.Address ?? tenant.Address;
+            tenant.Phone = dto.Phone ?? tenant.Phone;
+            tenant.Email = dto.Email ?? tenant.Email;
+            tenant.EstablishedYear = dto.EstablishedYear ?? tenant.EstablishedYear;
+            tenant.IsActive = dto.IsActive ?? tenant.IsActive;
+            tenant.FacebookUrl = dto.FacebookUrl ?? tenant.FacebookUrl;
+            tenant.InstagramUrl = dto.InstagramUrl ?? tenant.InstagramUrl;
+            tenant.WebsiteUrl = dto.WebsiteUrl ?? tenant.WebsiteUrl;
+            tenant.MapEmbedUrl = dto.MapEmbedUrl ?? tenant.MapEmbedUrl;
+            tenant.VideoUrl = dto.VideoUrl ?? tenant.VideoUrl;
+            tenant.AboutImageUrl = dto.AboutImageUrl ?? tenant.AboutImageUrl;
 
             await _context.SaveChangesAsync();
             return NoContent();
@@ -123,9 +95,7 @@ namespace SchoolWebsite.Controllers
         public async Task<IActionResult> DeactivateSchool(int id)
         {
             var tenant = await _context.Tenants.FindAsync(id);
-            if (tenant == null)
-                return NotFound("School not found");
-
+            if (tenant == null) return NotFound("School not found");
             tenant.IsActive = !tenant.IsActive;
             await _context.SaveChangesAsync();
             return NoContent();
@@ -133,43 +103,58 @@ namespace SchoolWebsite.Controllers
 
         [HttpPost("schools/{id}/admin")]
         [Authorize(Roles = "SuperAdmin")]
-        public async Task<ActionResult<object>> CreateSchoolAdmin(int id, [FromBody] CreateAdminUserDto createAdminDto)
+        public async Task<ActionResult<object>> CreateSchoolAdmin(int id, [FromBody] CreateAdminUserDto dto)
         {
             var tenant = await _context.Tenants.FindAsync(id);
-            if (tenant == null)
-                return NotFound("School not found");
+            if (tenant == null) return NotFound("School not found");
 
-            // FIX: Only block duplicate emails, allow multiple admins per school
             var existingEmail = await _context.AdminUsers
-                .FirstOrDefaultAsync(u => u.Email.ToLower() == createAdminDto.Email.ToLower());
+                .FirstOrDefaultAsync(u => u.Email.ToLower() == dto.Email.ToLower());
+            if (existingEmail != null) return BadRequest("An admin with this email already exists");
 
-            if (existingEmail != null)
-                return BadRequest("An admin with this email already exists");
-
-            string passwordHash = BCrypt.Net.BCrypt.HashPassword(createAdminDto.Password);
-
+            string passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
             var adminUser = new AdminUser
             {
-                Email = createAdminDto.Email,
+                Email = dto.Email,
                 PasswordHash = passwordHash,
                 Role = "SchoolAdmin",
                 TenantId = id,
                 IsActive = true
             };
-
             _context.AdminUsers.Add(adminUser);
             await _context.SaveChangesAsync();
-
             return Ok(new { message = "School admin created successfully" });
         }
 
+        private static TenantDto MapToDto(Tenant t) => new()
+        {
+            Id = t.Id,
+            SchoolName = t.SchoolName,
+            Subdomain = t.Subdomain,
+            LogoUrl = t.LogoUrl,
+            BannerUrl = t.BannerUrl,
+            PrimaryColor = t.PrimaryColor,
+            AccentColor = t.AccentColor,
+            AboutText = t.AboutText,
+            Address = t.Address,
+            Phone = t.Phone,
+            Email = t.Email,
+            EstablishedYear = t.EstablishedYear,
+            FacebookUrl = t.FacebookUrl,
+            InstagramUrl = t.InstagramUrl,
+            WebsiteUrl = t.WebsiteUrl,
+            MapEmbedUrl = t.MapEmbedUrl,
+            VideoUrl = t.VideoUrl,
+            AboutImageUrl = t.AboutImageUrl,
+            IsActive = t.IsActive,
+            CreatedAt = t.CreatedAt
+        };
+
         private string HashPassword(string password)
         {
-            using (var sha256 = SHA256.Create())
-            {
-                var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-                return Convert.ToBase64String(hashedBytes);
-            }
+            using var sha256 = SHA256.Create();
+            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+            return Convert.ToBase64String(hashedBytes);
         }
     }
 

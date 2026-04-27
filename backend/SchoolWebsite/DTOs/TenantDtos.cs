@@ -5,6 +5,7 @@ namespace SchoolWebsite.DTOs
         public string SchoolName { get; set; } = string.Empty;
         public string Subdomain { get; set; } = string.Empty;
         public string? LogoUrl { get; set; }
+        public string? BannerUrl { get; set; }
         public string PrimaryColor { get; set; } = "#1B2A4A";
         public string AccentColor { get; set; } = "#C9A84C";
         public string? AboutText { get; set; }
@@ -24,6 +25,7 @@ namespace SchoolWebsite.DTOs
     {
         public string? SchoolName { get; set; }
         public string? LogoUrl { get; set; }
+        public string? BannerUrl { get; set; }
         public string? PrimaryColor { get; set; }
         public string? AccentColor { get; set; }
         public string? AboutText { get; set; }
@@ -46,6 +48,7 @@ namespace SchoolWebsite.DTOs
         public string SchoolName { get; set; } = string.Empty;
         public string Subdomain { get; set; } = string.Empty;
         public string? LogoUrl { get; set; }
+        public string? BannerUrl { get; set; }
         public string PrimaryColor { get; set; } = "#1B2A4A";
         public string AccentColor { get; set; } = "#C9A84C";
         public string? AboutText { get; set; }

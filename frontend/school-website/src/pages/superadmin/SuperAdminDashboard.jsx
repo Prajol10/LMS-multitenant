@@ -7,6 +7,7 @@ export default function SuperAdminDashboard() {
   const [schools, setSchools] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingSchool, setEditingSchool] = useState(null);
   const [form, setForm] = useState({
     schoolName: '', subdomain: '', primaryColor: '#1B2A4A',
     accentColor: '#C9A84C', aboutText: '', address: '',
@@ -28,82 +29,99 @@ export default function SuperAdminDashboard() {
       });
       const data = await res.json();
       setSchools(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
 
-  const handleCreateSchool = async (e) => {
+  const resetForm = () => {
+    setForm({ schoolName: '', subdomain: '', primaryColor: '#1B2A4A', accentColor: '#C9A84C', aboutText: '', address: '', phone: '', email: '', establishedYear: '' });
+    setEditingSchool(null);
+    setShowForm(false);
+  };
+
+  const handleSubmitSchool = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     setMessage('');
     try {
-      const res = await fetch(`${API}/school`, {
-        method: 'POST',
+      const isEditing = !!editingSchool;
+      const url = isEditing ? `${API}/superadmin/schools/${editingSchool.id}` : `${API}/school`;
+      const method = isEditing ? 'PUT' : 'POST';
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ ...form, establishedYear: parseInt(form.establishedYear) })
+        body: JSON.stringify({ ...form, establishedYear: form.establishedYear ? parseInt(form.establishedYear) : null })
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || data || 'Failed to create school');
-      setMessage('School created successfully!');
-      setShowForm(false);
-      setForm({ schoolName: '', subdomain: '', primaryColor: '#1B2A4A', accentColor: '#C9A84C', aboutText: '', address: '', phone: '', email: '', establishedYear: '' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || data || 'Failed');
+      setMessage(isEditing ? 'School updated successfully!' : 'School created successfully!');
+      resetForm();
       fetchSchools();
-    } catch (err) {
-      setMessage(err.message);
-    } finally {
-      setSubmitting(false);
-    }
+    } catch (err) { setMessage(err.message); }
+    finally { setSubmitting(false); }
   };
 
+  const openEditSchool = (school) => {
+    setEditingSchool(school);
+    setForm({
+      schoolName: school.schoolName || '',
+      subdomain: school.subdomain || '',
+      primaryColor: school.primaryColor || '#1B2A4A',
+      accentColor: school.accentColor || '#C9A84C',
+      aboutText: school.aboutText || '',
+      address: school.address || '',
+      phone: school.phone || '',
+      email: school.email || '',
+      establishedYear: school.establishedYear || '',
+      logoUrl: school.logoUrl || '',
+      bannerUrl: school.bannerUrl || '',
+      facebookUrl: school.facebookUrl || '',
+      instagramUrl: school.instagramUrl || '',
+      websiteUrl: school.websiteUrl || '',
+      mapEmbedUrl: school.mapEmbedUrl || '',
+      videoUrl: school.videoUrl || '',
+    });
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-  const handleDeleteSchool = async (schoolId, schoolName) => {
-    if (!confirm(`school.isActive ? 'Are you sure you want to deactivate' : 'Activate "${schoolName}"? This will hide it from the public.`)) return;
+  const handleDeleteSchool = async (schoolId, schoolName, isActive) => {
+    if (!confirm(`${isActive ? 'Deactivate' : 'Activate'} "${schoolName}"?`)) return;
     try {
       const res = await fetch(`${API}/superadmin/schools/${schoolId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (!res.ok) throw new Error('Failed to deactivate school');
+      if (!res.ok) throw new Error('Failed');
       fetchSchools();
-    } catch (err) {
-      alert('Error: ' + err.message);
-    }
+    } catch (err) { alert('Error: ' + err.message); }
   };
 
   const toggleAdminForm = (schoolId) => {
-    setAdminForms(prev => ({
-      ...prev,
-      [schoolId]: prev[schoolId] ? null : { email: '', password: '' }
-    }));
+    setAdminForms(prev => ({ ...prev, [schoolId]: prev[schoolId] ? null : { email: '', password: '' } }));
   };
 
   const handleCreateAdmin = async (e, schoolId) => {
     e.preventDefault();
-    const form = adminForms[schoolId];
+    const f = adminForms[schoolId];
     try {
       const res = await fetch(`${API}/superadmin/schools/${schoolId}/admin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ email: form.email, password: form.password })
+        body: JSON.stringify({ email: f.email, password: f.password })
       });
       const text = await res.text();
       let data;
       try { data = JSON.parse(text); } catch { data = { message: text }; }
-      if (!res.ok) throw new Error(data.message || text || 'Failed to create admin');
-      setAdminMessages(prev => ({ ...prev, [schoolId]: '✅ Admin created! Email: ' + form.email }));
+      if (!res.ok) throw new Error(data.message || text || 'Failed');
+      setAdminMessages(prev => ({ ...prev, [schoolId]: '✅ Admin created! Email: ' + f.email }));
       setAdminForms(prev => ({ ...prev, [schoolId]: null }));
     } catch (err) {
       setAdminMessages(prev => ({ ...prev, [schoolId]: '❌ ' + err.message }));
     }
   };
 
-  const logout = () => {
-    localStorage.clear();
-    navigate('/superadmin/login');
-  };
+  const logout = () => { localStorage.clear(); navigate('/superadmin/login'); };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -116,18 +134,16 @@ export default function SuperAdminDashboard() {
           <div className="bg-[#243660] rounded-lg px-4 py-2.5 text-sm font-medium">All Schools</div>
         </nav>
         <div className="p-4">
-          <button onClick={logout} className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition">
-            Logout
-          </button>
+          <button onClick={logout} className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition">Logout</button>
         </div>
       </div>
 
       <div className="flex-1 p-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-[#1B2A4A]">All Schools</h1>
-          <button onClick={() => setShowForm(!showForm)}
+          <button onClick={() => { resetForm(); setShowForm(!showForm); }}
             className="bg-[#1B2A4A] text-white px-4 py-2 rounded-lg hover:bg-[#243660] transition">
-            {showForm ? 'Cancel' : '+ Add New School'}
+            {showForm && !editingSchool ? 'Cancel' : '+ Add New School'}
           </button>
         </div>
 
@@ -139,59 +155,72 @@ export default function SuperAdminDashboard() {
 
         {showForm && (
           <div className="bg-white rounded-xl shadow p-6 mb-6">
-            <h2 className="text-lg font-bold text-[#1B2A4A] mb-4">Create New School</h2>
-            <form onSubmit={handleCreateSchool} className="grid grid-cols-2 gap-4">
+            <h2 className="text-lg font-bold text-[#1B2A4A] mb-4">{editingSchool ? `Edit: ${editingSchool.schoolName}` : 'Create New School'}</h2>
+            <form onSubmit={handleSubmitSchool} className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">School Name</label>
-                <input value={form.schoolName} onChange={e => setForm({...form, schoolName: e.target.value})}
+                <input value={form.schoolName} onChange={e => setForm({ ...form, schoolName: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" required />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Subdomain (no spaces, lowercase)</label>
-                <input value={form.subdomain} onChange={e => setForm({...form, subdomain: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '')})}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
-                  placeholder="e.g. ratobangala" required />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Subdomain {editingSchool && <span className="text-gray-400">(cannot change)</span>}</label>
+                <input value={form.subdomain}
+                  onChange={e => !editingSchool && setForm({ ...form, subdomain: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '') })}
+                  className={`w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A] ${editingSchool ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  placeholder="e.g. ratobangala" required readOnly={!!editingSchool} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Primary Color</label>
-                <input type="color" value={form.primaryColor} onChange={e => setForm({...form, primaryColor: e.target.value})}
+                <input type="color" value={form.primaryColor} onChange={e => setForm({ ...form, primaryColor: e.target.value })}
                   className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Accent Color</label>
-                <input type="color" value={form.accentColor} onChange={e => setForm({...form, accentColor: e.target.value})}
+                <input type="color" value={form.accentColor} onChange={e => setForm({ ...form, accentColor: e.target.value })}
                   className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                <input value={form.address} onChange={e => setForm({...form, address: e.target.value})}
+                <input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                <input value={form.phone} onChange={e => setForm({...form, phone: e.target.value})}
+                <input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})}
+                <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Established Year</label>
-                <input type="number" value={form.establishedYear} onChange={e => setForm({...form, establishedYear: e.target.value})}
+                <input type="number" value={form.establishedYear} onChange={e => setForm({ ...form, establishedYear: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
+                <input value={form.logoUrl || ''} onChange={e => setForm({ ...form, logoUrl: e.target.value })}
+                  placeholder="https://..." className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Banner URL</label>
+                <input value={form.bannerUrl || ''} onChange={e => setForm({ ...form, bannerUrl: e.target.value })}
+                  placeholder="https://..." className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
               </div>
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">About Text</label>
-                <textarea value={form.aboutText} onChange={e => setForm({...form, aboutText: e.target.value})}
+                <textarea value={form.aboutText} onChange={e => setForm({ ...form, aboutText: e.target.value })}
                   rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
               </div>
-              <div className="col-span-2">
+              <div className="col-span-2 flex gap-3">
                 <button type="submit" disabled={submitting}
                   className="bg-[#1B2A4A] text-white px-6 py-2 rounded-lg hover:bg-[#243660] transition disabled:opacity-50">
-                  {submitting ? 'Creating...' : 'Create School'}
+                  {submitting ? 'Saving...' : editingSchool ? 'Update School' : 'Create School'}
                 </button>
+                <button type="button" onClick={resetForm}
+                  className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition">Cancel</button>
               </div>
             </form>
           </div>
@@ -213,13 +242,11 @@ export default function SuperAdminDashboard() {
                     <p className="text-sm text-gray-500">{school.subdomain}</p>
                   </div>
                 </div>
-
                 <div className="text-sm text-gray-600 space-y-1 mb-4">
                   <p>📍 {school.address || 'No address'}</p>
                   <p>📧 {school.email || 'No email'}</p>
                   <p>📅 Est. {school.establishedYear || 'N/A'}</p>
                 </div>
-
                 <div className="flex flex-wrap gap-2 mb-3">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${school.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                     {school.isActive ? 'Active' : 'Inactive'}
@@ -228,43 +255,34 @@ export default function SuperAdminDashboard() {
                     className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium hover:bg-blue-200 transition">
                     View Site
                   </a>
-                  <button
-                    onClick={() => handleDeleteSchool(school.id, school.schoolName)}
+                  <button onClick={() => openEditSchool(school)}
+                    className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium hover:bg-yellow-200 transition">
+                    Edit
+                  </button>
+                  <button onClick={() => handleDeleteSchool(school.id, school.schoolName, school.isActive)}
                     className={`px-2 py-1 rounded-full text-xs font-medium transition ${school.isActive ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}>
                     {school.isActive ? 'Deactivate' : 'Activate'}
                   </button>
                 </div>
-
-                <button
-                  onClick={() => toggleAdminForm(school.id)}
+                <button onClick={() => toggleAdminForm(school.id)}
                   className="w-full text-sm bg-[#C9A84C] text-white px-3 py-1.5 rounded-lg hover:bg-[#b8943f] transition font-medium">
                   {adminForms[school.id] ? 'Cancel' : '+ Create Admin Account'}
                 </button>
-
                 {adminMessages[school.id] && (
                   <p className={`mt-2 text-xs ${adminMessages[school.id].includes('✅') ? 'text-green-600' : 'text-red-500'}`}>
                     {adminMessages[school.id]}
                   </p>
                 )}
-
                 {adminForms[school.id] && (
                   <form onSubmit={(e) => handleCreateAdmin(e, school.id)} className="mt-3 space-y-2">
-                    <input
-                      type="email"
-                      placeholder="Admin email"
+                    <input type="email" placeholder="Admin email"
                       value={adminForms[school.id].email}
                       onChange={e => setAdminForms(prev => ({ ...prev, [school.id]: { ...prev[school.id], email: e.target.value } }))}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
-                      required
-                    />
-                    <input
-                      type="password"
-                      placeholder="Admin password"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" required />
+                    <input type="password" placeholder="Admin password"
                       value={adminForms[school.id].password}
                       onChange={e => setAdminForms(prev => ({ ...prev, [school.id]: { ...prev[school.id], password: e.target.value } }))}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
-                      required
-                    />
+                      className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" required />
                     <button type="submit"
                       className="w-full bg-[#1B2A4A] text-white px-3 py-1.5 rounded-lg text-sm hover:bg-[#243660] transition">
                       Create Admin
