@@ -1,9 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTenant } from '../context/TenantContext';
+import ApiService from '../services/api';
 
 const Contact = () => {
   const { tenant } = useTenant();
+  const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' });
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
+
   if (!tenant) return null;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setSuccess(''); setError('');
+    try {
+      await ApiService.submitContact(tenant.subdomain, form);
+      setSuccess('Message sent successfully! We will get back to you soon.');
+      setForm({ name: '', email: '', phone: '', message: '' });
+    } catch (err) {
+      setError('Failed to send message. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <section id="contact" className="py-20 bg-gray-50">
@@ -13,7 +34,6 @@ const Contact = () => {
           <div className="w-20 h-1 bg-yellow-500 mx-auto"></div>
           <p className="mt-4 text-xl text-gray-600">Get in touch with us</p>
         </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div>
             <h3 className="text-2xl font-bold text-gray-900 mb-6">School Information</h3>
@@ -30,7 +50,6 @@ const Contact = () => {
                   <p className="mt-1 text-gray-600">{tenant.address || 'Address not available'}</p>
                 </div>
               </div>
-
               <div className="flex items-start">
                 <div className="flex-shrink-0 bg-green-100 p-3 rounded-lg">
                   <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -42,7 +61,6 @@ const Contact = () => {
                   <p className="mt-1 text-gray-600">{tenant.phone || 'Phone not available'}</p>
                 </div>
               </div>
-
               <div className="flex items-start">
                 <div className="flex-shrink-0 bg-purple-100 p-3 rounded-lg">
                   <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,7 +72,6 @@ const Contact = () => {
                   <p className="mt-1 text-gray-600">{tenant.email || 'Email not available'}</p>
                 </div>
               </div>
-
               {(tenant.facebookUrl || tenant.instagramUrl || tenant.websiteUrl) && (
                 <div className="flex items-start">
                   <div className="flex-shrink-0 bg-yellow-100 p-3 rounded-lg">
@@ -65,36 +82,18 @@ const Contact = () => {
                   <div className="ml-4">
                     <h4 className="text-lg font-medium text-gray-900">Follow Us</h4>
                     <div className="flex gap-3 mt-2">
-                      {tenant.facebookUrl && (
-                        <a href={tenant.facebookUrl} target="_blank" rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 text-sm font-medium">Facebook</a>
-                      )}
-                      {tenant.instagramUrl && (
-                        <a href={tenant.instagramUrl} target="_blank" rel="noopener noreferrer"
-                          className="text-pink-600 hover:text-pink-800 text-sm font-medium">Instagram</a>
-                      )}
-                      {tenant.websiteUrl && (
-                        <a href={tenant.websiteUrl} target="_blank" rel="noopener noreferrer"
-                          className="text-gray-600 hover:text-gray-800 text-sm font-medium">Website</a>
-                      )}
+                      {tenant.facebookUrl && <a href={tenant.facebookUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 text-sm font-medium">Facebook</a>}
+                      {tenant.instagramUrl && <a href={tenant.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-pink-600 hover:text-pink-800 text-sm font-medium">Instagram</a>}
+                      {tenant.websiteUrl && <a href={tenant.websiteUrl} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-gray-800 text-sm font-medium">Website</a>}
                     </div>
                   </div>
                 </div>
               )}
             </div>
-
             <div className="mt-8">
               <h4 className="text-lg font-medium text-gray-900 mb-4">Find Us</h4>
               {tenant.mapEmbedUrl ? (
-                <iframe
-                  src={tenant.mapEmbedUrl}
-                  width="100%"
-                  height="256"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  className="rounded-xl"
-                />
+                <iframe src={tenant.mapEmbedUrl} width="100%" height="256" style={{ border: 0 }} allowFullScreen loading="lazy" className="rounded-xl" />
               ) : (
                 <div className="bg-gray-200 border-2 border-dashed rounded-xl w-full h-64 flex items-center justify-center">
                   <span className="text-gray-500">Map not configured yet</span>
@@ -105,26 +104,37 @@ const Contact = () => {
 
           <div>
             <h3 className="text-2xl font-bold text-gray-900 mb-6">Send us a message</h3>
-            <form className="space-y-6">
+            {success && <div className="mb-4 p-4 bg-green-50 text-green-700 rounded-lg text-sm">{success}</div>}
+            {error && <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-lg text-sm">{error}</div>}
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Full Name</label>
-                <input type="text" className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Your full name" />
+                <label className="block text-sm font-medium text-gray-700">Full Name *</label>
+                <input type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
+                  className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Your full name" required />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Email Address</label>
-                <input type="email" className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="your.email@example.com" />
+                <label className="block text-sm font-medium text-gray-700">Email Address *</label>
+                <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
+                  className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="your.email@example.com" required />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Subject</label>
-                <input type="text" className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Subject of your message" />
+                <label className="block text-sm font-medium text-gray-700">Phone</label>
+                <input type="text" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })}
+                  className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Your phone number" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Message</label>
-                <textarea rows={5} className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Your message here..."></textarea>
+                <label className="block text-sm font-medium text-gray-700">Message *</label>
+                <textarea rows={5} value={form.message} onChange={e => setForm({ ...form, message: e.target.value })}
+                  className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Your message here..." required />
               </div>
-              <button type="submit" className="w-full px-6 py-3 text-base font-medium rounded-lg text-white shadow-sm hover:opacity-90 transition"
+              <button type="submit" disabled={submitting}
+                className="w-full px-6 py-3 text-base font-medium rounded-lg text-white shadow-sm hover:opacity-90 transition disabled:opacity-50"
                 style={{ backgroundColor: tenant.primaryColor }}>
-                Send Message
+                {submitting ? 'Sending...' : 'Send Message'}
               </button>
             </form>
           </div>

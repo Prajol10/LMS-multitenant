@@ -13,29 +13,32 @@ export const TenantProvider = ({ children, schoolSlug }) => {
   const [tenant, setTenant] = useState(null);
   const [notices, setNotices] = useState([]);
   const [gallery, setGallery] = useState([]);
+  const [programs, setPrograms] = useState([]);
+  const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const loadTenantData = async () => {
     try {
       setLoading(true);
-
-      // Use passed schoolSlug, or fall back to ?school= query param
       const urlParams = new URLSearchParams(window.location.search);
       const identifier = schoolSlug || urlParams.get('school');
-
-      if (!identifier) {
-        throw new Error('No school identifier found');
-      }
+      if (!identifier) throw new Error('No school identifier found');
 
       const tenantData = await ApiService.getSchoolByTenant(identifier);
       setTenant(tenantData);
 
-      const noticesData = await ApiService.getNoticesByTenant(identifier);
-      setNotices(noticesData);
+      const [noticesData, galleryData, programsData, studentsData] = await Promise.all([
+        ApiService.getNoticesByTenant(identifier),
+        ApiService.getGalleryByTenant(identifier),
+        ApiService.getProgramsByTenant(identifier).catch(() => []),
+        ApiService.getStudentsByTenant(identifier).catch(() => []),
+      ]);
 
-      const galleryData = await ApiService.getGalleryByTenant(identifier);
+      setNotices(noticesData);
       setGallery(galleryData);
+      setPrograms(programsData);
+      setStudents(studentsData);
     } catch (err) {
       setError(err.message || 'Failed to load school data');
     } finally {
@@ -46,7 +49,7 @@ export const TenantProvider = ({ children, schoolSlug }) => {
   useEffect(() => { loadTenantData(); }, [schoolSlug]);
 
   return (
-    <TenantContext.Provider value={{ tenant, notices, gallery, loading, error, reloadTenantData: loadTenantData }}>
+    <TenantContext.Provider value={{ tenant, notices, gallery, programs, students, loading, error, reloadTenantData: loadTenantData }}>
       {children}
     </TenantContext.Provider>
   );
