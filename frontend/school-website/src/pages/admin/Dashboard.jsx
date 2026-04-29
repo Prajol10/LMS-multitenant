@@ -484,10 +484,38 @@ export default function Dashboard() {
                         placeholder="e.g. Top Scorer, Best Athlete"
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Photo URL</label>
-                      <input value={studentForm.imageUrl} onChange={e => setStudentForm({ ...studentForm, imageUrl: e.target.value })}
-                        placeholder="https://..." className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">About / Description</label>
+                      <textarea value={studentForm.about||''} onChange={e => setStudentForm({ ...studentForm, about: e.target.value })}
+                        rows={3} placeholder="e.g. Passionate about science and mathematics. School captain 2024."
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Student Photo</label>
+                      <div className="flex gap-2 mb-2">
+                        {['url','file'].map(m => (
+                          <button key={m} type="button" onClick={() => setStudentForm({ ...studentForm, photoMode: m })}
+                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${(studentForm.photoMode||'file')===m?'bg-[#1B2A4A] text-white':'bg-gray-100 text-gray-700'}`}>
+                            {m==='url'?'Paste URL':'Upload from Device'}
+                          </button>
+                        ))}
+                      </div>
+                      {(studentForm.photoMode||'file')==='url'?(
+                        <input value={studentForm.imageUrl||''} onChange={e=>setStudentForm({...studentForm,imageUrl:e.target.value})}
+                          placeholder="https://..." className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                      ):(
+                        <div>
+                          <input type="file" accept="image/*" onChange={e=>{
+                            const file=e.target.files[0];if(!file)return;
+                            const reader=new FileReader();
+                            reader.onloadend=()=>setStudentForm({...studentForm,imageUrl:reader.result});
+                            reader.readAsDataURL(file);
+                          }} className="w-full border border-gray-300 rounded-lg px-3 py-2" />
+                          {studentForm.imageUrl&&(
+                            <img src={studentForm.imageUrl} alt="Preview" className="mt-2 h-20 w-20 object-cover rounded-full border-2 border-gray-200" />
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="flex gap-3">

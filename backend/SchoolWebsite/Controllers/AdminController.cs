@@ -153,7 +153,7 @@ namespace SchoolWebsite.Controllers
         {
             var tenantId = GetTenantId();
             if (tenantId == null) return Unauthorized();
-            var student = new Student { TenantId = tenantId.Value, Name = dto.Name, Grade = dto.Grade, Achievement = dto.Achievement, ImageUrl = dto.ImageUrl, IsActive = true };
+            var student = new Student { TenantId = tenantId.Value, Name = dto.Name, Grade = dto.Grade, Achievement = dto.Achievement, About = dto.About, ImageUrl = dto.ImageUrl, IsActive = true };
             _context.Students.Add(student);
             await _context.SaveChangesAsync();
             return Ok(student);
@@ -169,6 +169,7 @@ namespace SchoolWebsite.Controllers
             student.Name = dto.Name ?? student.Name;
             student.Grade = dto.Grade ?? student.Grade;
             student.Achievement = dto.Achievement ?? student.Achievement;
+            student.About = dto.About ?? student.About;
             student.ImageUrl = dto.ImageUrl ?? student.ImageUrl;
             await _context.SaveChangesAsync();
             return NoContent();
@@ -199,5 +200,5 @@ namespace SchoolWebsite.Controllers
     }
 
     public class ProgramDto { public string Title { get; set; } = string.Empty; public string? Description { get; set; } public string? Duration { get; set; } public string? Level { get; set; } public string? ImageUrl { get; set; } }
-    public class StudentDto { public string Name { get; set; } = string.Empty; public string? Grade { get; set; } public string? Achievement { get; set; } public string? ImageUrl { get; set; } }
+    public class StudentDto { public string Name { get; set; } = string.Empty; public string? Grade { get; set; } public string? Achievement { get; set; } public string? About { get; set; } public string? ImageUrl { get; set; } }
 }

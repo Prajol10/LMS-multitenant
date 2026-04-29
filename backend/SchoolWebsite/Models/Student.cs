@@ -13,6 +13,7 @@ namespace SchoolWebsite.Models
 
         public string? Grade { get; set; }
         public string? Achievement { get; set; }
+        public string? About { get; set; }
         public string? ImageUrl { get; set; }
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
