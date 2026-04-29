@@ -25,11 +25,8 @@ namespace SchoolWebsite.Controllers
         [HttpPost("seed-superadmin")]
         public async Task<IActionResult> SeedSuperAdmin()
         {
-            var existing = await _context.AdminUsers
-                .FirstOrDefaultAsync(u => u.Role == "SuperAdmin");
-
-            if (existing != null)
-                return BadRequest(new { message = "SuperAdmin already exists" });
+            var existing = await _context.AdminUsers.FirstOrDefaultAsync(u => u.Role == "SuperAdmin");
+            if (existing != null) return BadRequest(new { message = "SuperAdmin already exists" });
 
             var admin = new AdminUser
             {
@@ -39,10 +36,8 @@ namespace SchoolWebsite.Controllers
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
-
             _context.AdminUsers.Add(admin);
             await _context.SaveChangesAsync();
-
             return Ok(new { message = "SuperAdmin created", email = "superadmin@edunepal.com", password = "SuperAdmin@123" });
         }
 
@@ -50,6 +45,7 @@ namespace SchoolWebsite.Controllers
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
             var user = await _context.AdminUsers
+                .Include(u => u.Tenant)
                 .FirstOrDefaultAsync(u => u.Email == dto.Email && u.IsActive);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
@@ -62,7 +58,8 @@ namespace SchoolWebsite.Controllers
                 token,
                 email = user.Email,
                 role = user.Role,
-                tenantId = user.TenantId
+                tenantId = user.TenantId,
+                subdomain = user.Tenant?.Subdomain ?? ""
             });
         }
 
@@ -71,7 +68,6 @@ namespace SchoolWebsite.Controllers
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_config["Jwt:Key"] ?? "default-secret-key-32-characters!!"));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -79,7 +75,6 @@ namespace SchoolWebsite.Controllers
                 new Claim(ClaimTypes.Role, user.Role),
                 new Claim("TenantId", user.TenantId?.ToString() ?? "")
             };
-
             var token = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],
                 audience: _config["Jwt:Audience"],
@@ -87,7 +82,6 @@ namespace SchoolWebsite.Controllers
                 expires: DateTime.UtcNow.AddHours(24),
                 signingCredentials: creds
             );
-
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }

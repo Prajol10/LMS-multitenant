@@ -4,6 +4,15 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5071/api';
 
+const CLASS_LEVELS = [
+  'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5',
+  'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10',
+  'Class 11', 'Class 12',
+  'Class 1-5 (Primary)', 'Class 6-8 (Lower Secondary)',
+  'Class 9-10 (Secondary)', 'Class 11-12 (Higher Secondary)',
+  'Class 1-10', 'Class 1-12', 'All Classes'
+];
+
 const ImageUpload = ({ label, value, onChange, hint }) => {
   const [mode, setMode] = useState('url');
   return (
@@ -24,8 +33,7 @@ const ImageUpload = ({ label, value, onChange, hint }) => {
       ) : (
         <div>
           <input type="file" accept="image/*" onChange={e => {
-            const file = e.target.files[0];
-            if (!file) return;
+            const file = e.target.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onloadend = () => onChange(reader.result);
             reader.readAsDataURL(file);
@@ -48,6 +56,7 @@ export default function Dashboard() {
   const [gallery, setGallery] = useState([]);
   const [messages, setMessages] = useState([]);
   const [programs, setPrograms] = useState([]);
+  const [students, setStudents] = useState([]);
   const [schoolInfo, setSchoolInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [noticeForm, setNoticeForm] = useState({ title: '', content: '', isImportant: false });
@@ -57,6 +66,9 @@ export default function Dashboard() {
   const [showProgramForm, setShowProgramForm] = useState(false);
   const [editingProgram, setEditingProgram] = useState(null);
   const [programForm, setProgramForm] = useState({ title: '', description: '', duration: '', level: '', imageUrl: '' });
+  const [showStudentForm, setShowStudentForm] = useState(false);
+  const [editingStudent, setEditingStudent] = useState(null);
+  const [studentForm, setStudentForm] = useState({ name: '', grade: '', achievement: '', imageUrl: '' });
   const [message, setMessage] = useState('');
   const [editingInfo, setEditingInfo] = useState(false);
   const [infoForm, setInfoForm] = useState({});
@@ -81,16 +93,18 @@ export default function Dashboard() {
         aboutImageUrl: s.aboutImageUrl || '', primaryColor: s.primaryColor || '#1B2A4A',
         accentColor: s.accentColor || '#C9A84C',
       });
-      const [noticesRes, galleryRes, messagesRes, programsRes] = await Promise.all([
+      const [noticesRes, galleryRes, messagesRes, programsRes, studentsRes] = await Promise.all([
         fetch(`${API}/school/${s.subdomain}/notices`),
         fetch(`${API}/school/${s.subdomain}/gallery`),
         fetch(`${API}/admin/messages`, { headers: { Authorization: `Bearer ${token}` } }),
         fetch(`${API}/admin/programs`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API}/admin/students`, { headers: { Authorization: `Bearer ${token}` } }),
       ]);
       setNotices(await noticesRes.json());
       setGallery(await galleryRes.json());
       if (messagesRes.ok) setMessages(await messagesRes.json());
       if (programsRes.ok) setPrograms(await programsRes.json());
+      if (studentsRes.ok) setStudents(await studentsRes.json());
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
@@ -100,8 +114,7 @@ export default function Dashboard() {
   const addNotice = async (e) => {
     e.preventDefault();
     const res = await fetch(`${API}/notice`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(noticeForm)
     });
     if (res.ok) { showMsg('Notice added!'); setShowNoticeForm(false); setNoticeForm({ title: '', content: '', isImportant: false }); fetchData(); }
@@ -116,8 +129,7 @@ export default function Dashboard() {
   const addGalleryImage = async (e) => {
     e.preventDefault();
     const res = await fetch(`${API}/gallery`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ imageUrl: galleryForm.imageUrl, caption: galleryForm.caption })
     });
     if (res.ok) { showMsg('Image added!'); setShowGalleryForm(false); setGalleryForm({ imageUrl: '', caption: '', uploadMode: 'url' }); fetchData(); }
@@ -130,11 +142,9 @@ export default function Dashboard() {
   };
 
   const saveSchoolInfo = async (e) => {
-    e.preventDefault();
-    setSavingInfo(true);
+    e.preventDefault(); setSavingInfo(true);
     const res = await fetch(`${API}/admin/school`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ ...infoForm, establishedYear: infoForm.establishedYear ? parseInt(infoForm.establishedYear) : null })
     });
     if (res.ok) { showMsg('School info saved!'); setEditingInfo(false); fetchData(); }
@@ -155,9 +165,8 @@ export default function Dashboard() {
   const saveProgram = async (e) => {
     e.preventDefault();
     const url = editingProgram ? `${API}/admin/programs/${editingProgram.id}` : `${API}/admin/programs`;
-    const method = editingProgram ? 'PUT' : 'POST';
     const res = await fetch(url, {
-      method,
+      method: editingProgram ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(programForm)
     });
@@ -175,12 +184,35 @@ export default function Dashboard() {
     fetchData();
   };
 
+  const saveStudent = async (e) => {
+    e.preventDefault();
+    const url = editingStudent ? `${API}/admin/students/${editingStudent.id}` : `${API}/admin/students`;
+    const res = await fetch(url, {
+      method: editingStudent ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(studentForm)
+    });
+    if (res.ok) {
+      showMsg(editingStudent ? 'Student updated!' : 'Student added!');
+      setShowStudentForm(false); setEditingStudent(null);
+      setStudentForm({ name: '', grade: '', achievement: '', imageUrl: '' });
+      fetchData();
+    }
+  };
+
+  const deleteStudent = async (id) => {
+    if (!confirm('Delete this student?')) return;
+    await fetch(`${API}/admin/students/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+    fetchData();
+  };
+
   const logout = () => { localStorage.clear(); navigate(`/${storedSchool}/admin`); };
 
   const tabs = [
     { id: 'notices', label: 'Notices' },
     { id: 'gallery', label: 'Gallery' },
     { id: 'programs', label: 'Programs' },
+    { id: 'students', label: 'Students' },
     { id: 'messages', label: 'Messages', badge: messages.filter(m => !m.isRead).length },
     { id: 'info', label: 'School Info' },
   ];
@@ -207,20 +239,13 @@ export default function Dashboard() {
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition flex items-center justify-between ${activeTab === tab.id ? 'bg-[#243660]' : 'hover:bg-[#243660]/50'}`}>
               <span>{tab.label}</span>
-              {tab.badge > 0 && (
-                <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{tab.badge}</span>
-              )}
+              {tab.badge > 0 && <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{tab.badge}</span>}
             </button>
           ))}
         </nav>
         <div className="p-4 space-y-2">
-          <a href={`/${storedSchool}`}
-            className="block w-full text-center bg-[#243660] hover:bg-[#2d4580] text-white px-4 py-2 rounded-lg text-sm transition">
-            View Public Site
-          </a>
-          <button onClick={logout} className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition">
-            Logout
-          </button>
+          <a href={`/${storedSchool}`} className="block w-full text-center bg-[#243660] hover:bg-[#2d4580] text-white px-4 py-2 rounded-lg text-sm transition">View Public Site</a>
+          <button onClick={logout} className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition">Logout</button>
         </div>
       </div>
 
@@ -231,12 +256,12 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* NOTICES */}
         {activeTab === 'notices' && (
           <div>
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-2xl font-bold text-[#1B2A4A]">Notices</h1>
-              <button onClick={() => setShowNoticeForm(!showNoticeForm)}
-                className="bg-[#1B2A4A] text-white px-4 py-2 rounded-lg hover:bg-[#243660] transition">
+              <button onClick={() => setShowNoticeForm(!showNoticeForm)} className="bg-[#1B2A4A] text-white px-4 py-2 rounded-lg hover:bg-[#243660] transition">
                 {showNoticeForm ? 'Cancel' : '+ Add Notice'}
               </button>
             </div>
@@ -254,8 +279,7 @@ export default function Dashboard() {
                       rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" required />
                   </div>
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" checked={noticeForm.isImportant}
-                      onChange={e => setNoticeForm({ ...noticeForm, isImportant: e.target.checked })} className="w-4 h-4" />
+                    <input type="checkbox" checked={noticeForm.isImportant} onChange={e => setNoticeForm({ ...noticeForm, isImportant: e.target.checked })} className="w-4 h-4" />
                     <span className="text-sm font-medium text-gray-700">Mark as Important</span>
                   </label>
                   <button type="submit" className="bg-[#1B2A4A] text-white px-6 py-2 rounded-lg hover:bg-[#243660] transition">Add Notice</button>
@@ -284,12 +308,12 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* GALLERY */}
         {activeTab === 'gallery' && (
           <div>
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-2xl font-bold text-[#1B2A4A]">Gallery</h1>
-              <button onClick={() => setShowGalleryForm(!showGalleryForm)}
-                className="bg-[#1B2A4A] text-white px-4 py-2 rounded-lg hover:bg-[#243660] transition">
+              <button onClick={() => setShowGalleryForm(!showGalleryForm)} className="bg-[#1B2A4A] text-white px-4 py-2 rounded-lg hover:bg-[#243660] transition">
                 {showGalleryForm ? 'Cancel' : '+ Add Image'}
               </button>
             </div>
@@ -306,8 +330,7 @@ export default function Dashboard() {
                   </div>
                   {galleryForm.uploadMode === 'url' ? (
                     <input value={galleryForm.imageUrl} onChange={e => setGalleryForm({ ...galleryForm, imageUrl: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
-                      placeholder="https://images.unsplash.com/..." />
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" placeholder="https://..." />
                   ) : (
                     <div>
                       <input type="file" accept="image/*" onChange={e => {
@@ -316,9 +339,7 @@ export default function Dashboard() {
                         reader.onloadend = () => setGalleryForm({ ...galleryForm, imageUrl: reader.result });
                         reader.readAsDataURL(file);
                       }} className="w-full border border-gray-300 rounded-lg px-3 py-2" />
-                      {galleryForm.imageUrl?.startsWith('data:') && (
-                        <img src={galleryForm.imageUrl} alt="Preview" className="mt-2 h-32 object-cover rounded-lg" />
-                      )}
+                      {galleryForm.imageUrl?.startsWith('data:') && <img src={galleryForm.imageUrl} alt="Preview" className="mt-2 h-32 object-cover rounded-lg" />}
                     </div>
                   )}
                   <div>
@@ -346,6 +367,7 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* PROGRAMS */}
         {activeTab === 'programs' && (
           <div>
             <div className="flex justify-between items-center mb-6">
@@ -366,24 +388,22 @@ export default function Dashboard() {
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" required />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Level</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Class / Level</label>
                       <select value={programForm.level} onChange={e => setProgramForm({ ...programForm, level: e.target.value })}
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]">
-                        <option value="">Select level</option>
-                        {['Beginner', 'Intermediate', 'Advanced', 'All Levels'].map(l => <option key={l}>{l}</option>)}
+                        <option value="">Select class/level</option>
+                        {CLASS_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
                       </select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
                       <input value={programForm.duration} onChange={e => setProgramForm({ ...programForm, duration: e.target.value })}
-                        placeholder="e.g. 2 years, 6 months"
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                        placeholder="e.g. 1 year, 2 years" className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
                       <input value={programForm.imageUrl} onChange={e => setProgramForm({ ...programForm, imageUrl: e.target.value })}
-                        placeholder="https://..."
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                        placeholder="https://..." className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
                     </div>
                   </div>
                   <div>
@@ -411,18 +431,15 @@ export default function Dashboard() {
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="font-bold text-gray-800">{p.title}</h3>
-                        <div className="flex gap-2 mt-1">
+                        <div className="flex gap-2 mt-1 flex-wrap">
                           {p.level && <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">{p.level}</span>}
                           {p.duration && <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">⏱ {p.duration}</span>}
                         </div>
                         {p.description && <p className="text-gray-500 text-sm mt-2 line-clamp-2">{p.description}</p>}
                       </div>
                       <div className="flex flex-col gap-1 ml-2">
-                        <button onClick={() => {
-                          setEditingProgram(p);
-                          setProgramForm({ title: p.title, description: p.description || '', duration: p.duration || '', level: p.level || '', imageUrl: p.imageUrl || '' });
-                          setShowProgramForm(true);
-                        }} className="text-blue-400 hover:text-blue-600 text-sm">Edit</button>
+                        <button onClick={() => { setEditingProgram(p); setProgramForm({ title: p.title, description: p.description || '', duration: p.duration || '', level: p.level || '', imageUrl: p.imageUrl || '' }); setShowProgramForm(true); }}
+                          className="text-blue-400 hover:text-blue-600 text-sm">Edit</button>
                         <button onClick={() => deleteProgram(p.id)} className="text-red-400 hover:text-red-600 text-sm">Delete</button>
                       </div>
                     </div>
@@ -433,21 +450,99 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* STUDENTS */}
+        {activeTab === 'students' && (
+          <div>
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl font-bold text-[#1B2A4A]">Students</h1>
+              <button onClick={() => { setShowStudentForm(!showStudentForm); setEditingStudent(null); setStudentForm({ name: '', grade: '', achievement: '', imageUrl: '' }); }}
+                className="bg-[#1B2A4A] text-white px-4 py-2 rounded-lg hover:bg-[#243660] transition">
+                {showStudentForm ? 'Cancel' : '+ Add Student'}
+              </button>
+            </div>
+            {showStudentForm && (
+              <div className="bg-white rounded-xl shadow p-6 mb-6">
+                <h2 className="text-lg font-bold text-[#1B2A4A] mb-4">{editingStudent ? 'Edit Student' : 'New Student'}</h2>
+                <form onSubmit={saveStudent} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Student Name *</label>
+                      <input value={studentForm.name} onChange={e => setStudentForm({ ...studentForm, name: e.target.value })}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" required />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Grade / Class</label>
+                      <select value={studentForm.grade} onChange={e => setStudentForm({ ...studentForm, grade: e.target.value })}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]">
+                        <option value="">Select grade</option>
+                        {['Class 1','Class 2','Class 3','Class 4','Class 5','Class 6','Class 7','Class 8','Class 9','Class 10','Class 11','Class 12'].map(g => <option key={g} value={g}>{g}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Achievement</label>
+                      <input value={studentForm.achievement} onChange={e => setStudentForm({ ...studentForm, achievement: e.target.value })}
+                        placeholder="e.g. Top Scorer, Best Athlete"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Photo URL</label>
+                      <input value={studentForm.imageUrl} onChange={e => setStudentForm({ ...studentForm, imageUrl: e.target.value })}
+                        placeholder="https://..." className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <button type="submit" className="bg-[#1B2A4A] text-white px-6 py-2 rounded-lg hover:bg-[#243660] transition">
+                      {editingStudent ? 'Update Student' : 'Add Student'}
+                    </button>
+                    <button type="button" onClick={() => { setShowStudentForm(false); setEditingStudent(null); }}
+                      className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition">Cancel</button>
+                  </div>
+                </form>
+              </div>
+            )}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {students.length === 0 ? (
+                <div className="col-span-4 bg-white rounded-xl shadow p-8 text-center text-gray-400">No students yet — add your first student!</div>
+              ) : students.map(s => (
+                <div key={s.id} className="bg-white rounded-xl shadow p-4 text-center">
+                  {s.imageUrl ? (
+                    <img src={s.imageUrl} alt={s.name} className="w-16 h-16 rounded-full object-cover mx-auto mb-3 border-2 border-gray-200" />
+                  ) : (
+                    <div className="w-16 h-16 rounded-full bg-[#1B2A4A] text-white flex items-center justify-center mx-auto mb-3 text-xl font-bold">
+                      {s.name.charAt(0)}
+                    </div>
+                  )}
+                  <h3 className="font-bold text-gray-800 text-sm">{s.name}</h3>
+                  {s.grade && <p className="text-xs text-gray-500 mt-0.5">{s.grade}</p>}
+                  {s.achievement && <p className="text-xs text-yellow-600 mt-1">🏆 {s.achievement}</p>}
+                  <div className="flex gap-2 justify-center mt-3">
+                    <button onClick={() => { setEditingStudent(s); setStudentForm({ name: s.name, grade: s.grade || '', achievement: s.achievement || '', imageUrl: s.imageUrl || '' }); setShowStudentForm(true); }}
+                      className="text-blue-400 hover:text-blue-600 text-xs">Edit</button>
+                    <button onClick={() => deleteStudent(s.id)} className="text-red-400 hover:text-red-600 text-xs">Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* MESSAGES */}
         {activeTab === 'messages' && (
           <div>
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-2xl font-bold text-[#1B2A4A]">
                 Messages
                 {messages.filter(m => !m.isRead).length > 0 && (
-                  <span className="ml-2 px-2 py-0.5 bg-red-100 text-red-600 text-sm rounded-full">
-                    {messages.filter(m => !m.isRead).length} unread
-                  </span>
+                  <span className="ml-2 px-2 py-0.5 bg-red-100 text-red-600 text-sm rounded-full">{messages.filter(m => !m.isRead).length} unread</span>
                 )}
               </h1>
             </div>
             <div className="space-y-3">
               {messages.length === 0 ? (
-                <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">No messages yet.</div>
+                <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">
+                  <p>No messages yet.</p>
+                  <p className="text-sm mt-2">Messages sent through the contact form on your public site will appear here.</p>
+                </div>
               ) : messages.map(msg => (
                 <div key={msg.id} className={`bg-white rounded-xl shadow p-5 border-l-4 ${msg.isRead ? 'border-gray-200' : 'border-blue-500'}`}>
                   <div className="flex justify-between items-start">
@@ -459,6 +554,10 @@ export default function Dashboard() {
                       <p className="text-sm text-gray-500">{msg.email}{msg.phone ? ` · ${msg.phone}` : ''}</p>
                       <p className="text-gray-700 mt-2 text-sm">{msg.message}</p>
                       <p className="text-gray-400 text-xs mt-2">{new Date(msg.createdAt).toLocaleString()}</p>
+                      <a href={`mailto:${msg.email}`}
+                        className="inline-block mt-2 px-3 py-1 bg-[#1B2A4A] text-white text-xs rounded-lg hover:bg-[#243660] transition">
+                        Reply via Email
+                      </a>
                     </div>
                     <div className="flex flex-col gap-1 ml-4">
                       {!msg.isRead && (
@@ -473,13 +572,13 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* SCHOOL INFO */}
         {activeTab === 'info' && schoolInfo && (
           <div>
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-2xl font-bold text-[#1B2A4A]">School Information</h1>
               {!editingInfo && (
-                <button onClick={() => setEditingInfo(true)}
-                  className="bg-[#1B2A4A] text-white px-4 py-2 rounded-lg hover:bg-[#243660] transition">Edit Info</button>
+                <button onClick={() => setEditingInfo(true)} className="bg-[#1B2A4A] text-white px-4 py-2 rounded-lg hover:bg-[#243660] transition">Edit Info</button>
               )}
             </div>
             {editingInfo ? (
@@ -529,11 +628,11 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <ImageUpload label="School Logo" value={infoForm.logoUrl} onChange={v => setInfoForm({ ...infoForm, logoUrl: v })}
-                    hint="Recommended: 200×200px PNG with transparent background. Appears in navbar." />
+                    hint="Recommended: 200×200px PNG with transparent background." />
                   <ImageUpload label="Banner Image" value={infoForm.bannerUrl} onChange={v => setInfoForm({ ...infoForm, bannerUrl: v })}
-                    hint="Recommended: 1920×600px JPG. Appears as the hero banner on your homepage." />
+                    hint="Recommended: 1920×600px JPG. Hero banner on homepage." />
                   <ImageUpload label="About Section Image" value={infoForm.aboutImageUrl} onChange={v => setInfoForm({ ...infoForm, aboutImageUrl: v })}
-                    hint="Recommended: 800×500px JPG. Appears in the About section." />
+                    hint="Recommended: 800×500px JPG." />
                   <div className="grid grid-cols-2 gap-4">
                     {[
                       { key: 'facebookUrl', label: 'Facebook URL', placeholder: 'https://facebook.com/...' },
@@ -544,8 +643,7 @@ export default function Dashboard() {
                       <div key={key}>
                         <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
                         <input value={infoForm[key] || ''} onChange={e => setInfoForm({ ...infoForm, [key]: e.target.value })}
-                          placeholder={placeholder}
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                          placeholder={placeholder} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
                       </div>
                     ))}
                   </div>
