@@ -113,6 +113,22 @@ namespace SchoolWebsite.Controllers
             return Ok(students);
         }
 
+        [HttpGet("{subdomain}/messages")]
+        public async Task<ActionResult> GetMessagesBySubdomain(string subdomain)
+        {
+            var tenant = await _context.Tenants
+                .FirstOrDefaultAsync(t => t.Subdomain.ToLower() == subdomain.ToLower() && t.IsActive);
+            if (tenant == null) return NotFound("School not found");
+
+            var messages = await _context.LeadershipMessages
+                .Where(m => m.TenantId == tenant.Id && m.IsActive)
+                .OrderBy(m => m.SortOrder)
+                .ThenBy(m => m.CreatedAt)
+                .Select(m => new { m.Id, m.Name, m.Title, m.Content, m.ImageUrl, m.SortOrder })
+                .ToListAsync();
+            return Ok(messages);
+        }
+
         [HttpPost("{subdomain}/contact")]
         public async Task<IActionResult> SubmitContact(string subdomain, [FromBody] ContactMessageDto dto)
         {

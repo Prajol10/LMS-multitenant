@@ -31,6 +31,12 @@ class ApiService {
     return await response.json();
   }
 
+  static async getLeadershipByTenant(tenantIdentifier) {
+    const response = await fetch(`${API_BASE_URL}/school/${tenantIdentifier}/messages`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return await response.json();
+  }
+
   static async submitContact(tenantIdentifier, data) {
     const response = await fetch(`${API_BASE_URL}/school/${tenantIdentifier}/contact`, {
       method: 'POST',

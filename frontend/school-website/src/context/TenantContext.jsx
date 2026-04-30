@@ -15,6 +15,7 @@ export const TenantProvider = ({ children, schoolSlug }) => {
   const [gallery, setGallery] = useState([]);
   const [programs, setPrograms] = useState([]);
   const [students, setStudents] = useState([]);
+  const [leadership, setLeadership] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -49,7 +50,7 @@ export const TenantProvider = ({ children, schoolSlug }) => {
   useEffect(() => { loadTenantData(); }, [schoolSlug]);
 
   return (
-    <TenantContext.Provider value={{ tenant, notices, gallery, programs, students, loading, error, reloadTenantData: loadTenantData }}>
+    <TenantContext.Provider value={{ tenant, notices, gallery, programs, students, leadership, loading, error, reloadTenantData: loadTenantData }}>
       {children}
     </TenantContext.Provider>
   );

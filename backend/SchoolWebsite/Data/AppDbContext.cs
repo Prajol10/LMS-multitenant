@@ -13,6 +13,7 @@ namespace SchoolWebsite.Data
         public DbSet<ContactMessage> ContactMessages { get; set; }
         public DbSet<SchoolProgram> SchoolPrograms { get; set; }
         public DbSet<Student> Students { get; set; }
+        public DbSet<LeadershipMessage> LeadershipMessages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -25,6 +26,7 @@ namespace SchoolWebsite.Data
             modelBuilder.Entity<ContactMessage>().HasOne(m => m.Tenant).WithMany().HasForeignKey(m => m.TenantId).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<SchoolProgram>().HasOne(p => p.Tenant).WithMany().HasForeignKey(p => p.TenantId).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<Student>().HasOne(s => s.Tenant).WithMany().HasForeignKey(s => s.TenantId).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<LeadershipMessage>().HasOne(m => m.Tenant).WithMany().HasForeignKey(m => m.TenantId).OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

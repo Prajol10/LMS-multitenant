@@ -143,6 +143,54 @@ namespace SchoolWebsite.Controllers
             return NoContent();
         }
 
+        [HttpGet("leadership")] [Authorize]
+        public async Task<ActionResult> GetLeadership()
+        {
+            var tenantId = GetTenantId();
+            if (tenantId == null) return Unauthorized();
+            var msgs = await _context.LeadershipMessages.Where(m => m.TenantId == tenantId).OrderBy(m => m.SortOrder).ToListAsync();
+            return Ok(msgs);
+        }
+
+        [HttpPost("leadership")] [Authorize]
+        public async Task<ActionResult> CreateLeadership([FromBody] LeadershipDto dto)
+        {
+            var tenantId = GetTenantId();
+            if (tenantId == null) return Unauthorized();
+            var msg = new LeadershipMessage { TenantId = tenantId.Value, Name = dto.Name, Title = dto.Title, Content = dto.Content, ImageUrl = dto.ImageUrl, SortOrder = dto.SortOrder, IsActive = true };
+            _context.LeadershipMessages.Add(msg);
+            await _context.SaveChangesAsync();
+            return Ok(msg);
+        }
+
+        [HttpPut("leadership/{id}")] [Authorize]
+        public async Task<IActionResult> UpdateLeadership(int id, [FromBody] LeadershipDto dto)
+        {
+            var tenantId = GetTenantId();
+            if (tenantId == null) return Unauthorized();
+            var msg = await _context.LeadershipMessages.FirstOrDefaultAsync(m => m.Id == id && m.TenantId == tenantId);
+            if (msg == null) return NotFound();
+            msg.Name = dto.Name ?? msg.Name;
+            msg.Title = dto.Title ?? msg.Title;
+            msg.Content = dto.Content ?? msg.Content;
+            msg.ImageUrl = dto.ImageUrl ?? msg.ImageUrl;
+            msg.SortOrder = dto.SortOrder;
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpDelete("leadership/{id}")] [Authorize]
+        public async Task<IActionResult> DeleteLeadership(int id)
+        {
+            var tenantId = GetTenantId();
+            if (tenantId == null) return Unauthorized();
+            var msg = await _context.LeadershipMessages.FirstOrDefaultAsync(m => m.Id == id && m.TenantId == tenantId);
+            if (msg == null) return NotFound();
+            _context.LeadershipMessages.Remove(msg);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
         [HttpGet("students")] [Authorize]
         public async Task<ActionResult> GetStudents()
         {
@@ -204,5 +252,6 @@ namespace SchoolWebsite.Controllers
     }
 
     public class ProgramDto { public string Title { get; set; } = string.Empty; public string? Description { get; set; } public string? Duration { get; set; } public string? Level { get; set; } public string? ImageUrl { get; set; } }
+    public class LeadershipDto { public string Name { get; set; } = string.Empty; public string? Title { get; set; } public string? Content { get; set; } public string? ImageUrl { get; set; } public int SortOrder { get; set; } = 0; }
     public class StudentDto { public string Name { get; set; } = string.Empty; public string? Grade { get; set; } public string? Achievement { get; set; } public string? About { get; set; } public string? ImageUrl { get; set; } }
 }

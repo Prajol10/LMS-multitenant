@@ -57,6 +57,10 @@ export default function Dashboard() {
   const [messages, setMessages] = useState([]);
   const [programs, setPrograms] = useState([]);
   const [students, setStudents] = useState([]);
+  const [leadership, setLeadership] = useState([]);
+  const [showLeadershipForm, setShowLeadershipForm] = useState(false);
+  const [editingLeadership, setEditingLeadership] = useState(null);
+  const [leadershipForm, setLeadershipForm] = useState({ name: '', title: '', content: '', imageUrl: '', sortOrder: 0 });
   const [schoolInfo, setSchoolInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [noticeForm, setNoticeForm] = useState({ title: '', content: '', isImportant: false });
@@ -99,12 +103,16 @@ export default function Dashboard() {
         fetch(`${API}/admin/messages`, { headers: { Authorization: `Bearer ${token}` } }),
         fetch(`${API}/admin/programs`, { headers: { Authorization: `Bearer ${token}` } }),
         fetch(`${API}/admin/students`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API}/admin/leadership`, { headers: { Authorization: `Bearer ${token}` } }),
       ]);
       setNotices(await noticesRes.json());
       setGallery(await galleryRes.json());
       if (messagesRes.ok) setMessages(await messagesRes.json());
       if (programsRes.ok) setPrograms(await programsRes.json());
       if (studentsRes.ok) setStudents(await studentsRes.json());
+      const leadershipRes = responses ? responses[5] : null;
+      const lRes = await fetch(`${API}/admin/leadership`, { headers: { Authorization: `Bearer ${token}` } });
+      if (lRes.ok) setLeadership(await lRes.json());
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
@@ -206,10 +214,33 @@ export default function Dashboard() {
     fetchData();
   };
 
+  const saveLeadership = async (e) => {
+    e.preventDefault();
+    const url = editingLeadership ? `${API}/admin/leadership/${editingLeadership.id}` : `${API}/admin/leadership`;
+    const res = await fetch(url, {
+      method: editingLeadership ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ ...leadershipForm, sortOrder: parseInt(leadershipForm.sortOrder) || 0 })
+    });
+    if (res.ok) {
+      showMsg(editingLeadership ? 'Message updated!' : 'Message added!');
+      setShowLeadershipForm(false); setEditingLeadership(null);
+      setLeadershipForm({ name: '', title: '', content: '', imageUrl: '', sortOrder: 0 });
+      fetchData();
+    }
+  };
+
+  const deleteLeadership = async (id) => {
+    if (!confirm('Delete this message?')) return;
+    await fetch(`${API}/admin/leadership/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+    fetchData();
+  };
+
   const logout = () => { localStorage.clear(); navigate(`/${storedSchool}/admin`); };
 
   const tabs = [
     { id: 'notices', label: 'Notices' },
+    { id: 'leadership', label: 'Leadership Messages' },
     { id: 'gallery', label: 'Gallery' },
     { id: 'programs', label: 'Programs' },
     { id: 'students', label: 'Students' },
@@ -360,6 +391,81 @@ export default function Dashboard() {
                   <div className="p-3 flex justify-between items-center">
                     <p className="text-sm text-gray-600 truncate">{img.caption}</p>
                     <button onClick={() => deleteGalleryImage(img.id)} className="text-red-400 hover:text-red-600 text-sm ml-2">Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* LEADERSHIP MESSAGES */}
+        {activeTab === 'leadership' && (
+          <div>
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl font-bold text-[#1B2A4A]">Leadership Messages</h1>
+              <button onClick={() => { setShowLeadershipForm(!showLeadershipForm); setEditingLeadership(null); setLeadershipForm({ name: '', title: '', content: '', imageUrl: '', sortOrder: 0 }); }}
+                className="bg-[#1B2A4A] text-white px-4 py-2 rounded-lg hover:bg-[#243660] transition">
+                {showLeadershipForm ? 'Cancel' : '+ Add Message'}
+              </button>
+            </div>
+            {showLeadershipForm && (
+              <div className="bg-white rounded-xl shadow p-6 mb-6">
+                <h2 className="text-lg font-bold text-[#1B2A4A] mb-4">{editingLeadership ? 'Edit Message' : 'New Leadership Message'}</h2>
+                <form onSubmit={saveLeadership} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                      <input value={leadershipForm.name} onChange={e => setLeadershipForm({ ...leadershipForm, name: e.target.value })}
+                        placeholder="e.g. Milan Dixit" className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" required />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Title / Role *</label>
+                      <input value={leadershipForm.title} onChange={e => setLeadershipForm({ ...leadershipForm, title: e.target.value })}
+                        placeholder="e.g. Message from the Principal" className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" required />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Photo URL</label>
+                      <input value={leadershipForm.imageUrl} onChange={e => setLeadershipForm({ ...leadershipForm, imageUrl: e.target.value })}
+                        placeholder="https://..." className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Order (0 = first)</label>
+                      <input type="number" value={leadershipForm.sortOrder} onChange={e => setLeadershipForm({ ...leadershipForm, sortOrder: e.target.value })}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Message Content</label>
+                    <textarea value={leadershipForm.content} onChange={e => setLeadershipForm({ ...leadershipForm, content: e.target.value })}
+                      rows={5} placeholder="Write the message here..." className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                  </div>
+                  <div className="flex gap-3">
+                    <button type="submit" className="bg-[#1B2A4A] text-white px-6 py-2 rounded-lg hover:bg-[#243660] transition">
+                      {editingLeadership ? 'Update Message' : 'Add Message'}
+                    </button>
+                    <button type="button" onClick={() => { setShowLeadershipForm(false); setEditingLeadership(null); }}
+                      className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition">Cancel</button>
+                  </div>
+                </form>
+              </div>
+            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {leadership.length === 0 ? (
+                <div className="col-span-2 bg-white rounded-xl shadow p-8 text-center text-gray-400">
+                  No leadership messages yet — add Principal or Director messages!
+                </div>
+              ) : leadership.map(msg => (
+                <div key={msg.id} className="bg-white rounded-xl shadow overflow-hidden">
+                  {msg.imageUrl && <img src={msg.imageUrl} alt={msg.name} className="w-full h-48 object-cover object-top" />}
+                  <div className="p-5">
+                    <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">{msg.title}</p>
+                    <h3 className="font-bold text-gray-800 text-lg">{msg.name}</h3>
+                    <p className="text-gray-500 text-sm mt-2 line-clamp-3">{msg.content}</p>
+                    <div className="flex gap-2 mt-3">
+                      <button onClick={() => { setEditingLeadership(msg); setLeadershipForm({ name: msg.name, title: msg.title || '', content: msg.content || '', imageUrl: msg.imageUrl || '', sortOrder: msg.sortOrder || 0 }); setShowLeadershipForm(true); }}
+                        className="text-blue-400 hover:text-blue-600 text-sm">Edit</button>
+                      <button onClick={() => deleteLeadership(msg.id)} className="text-red-400 hover:text-red-600 text-sm">Delete</button>
+                    </div>
                   </div>
                 </div>
               ))}
