@@ -110,7 +110,6 @@ export default function Dashboard() {
       if (messagesRes.ok) setMessages(await messagesRes.json());
       if (programsRes.ok) setPrograms(await programsRes.json());
       if (studentsRes.ok) setStudents(await studentsRes.json());
-      const leadershipRes = responses ? responses[5] : null;
       const lRes = await fetch(`${API}/admin/leadership`, { headers: { Authorization: `Bearer ${token}` } });
       if (lRes.ok) setLeadership(await lRes.json());
     } catch (err) { console.error(err); }
@@ -424,9 +423,31 @@ export default function Dashboard() {
                         placeholder="e.g. Message from the Principal" className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" required />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Photo URL</label>
-                      <input value={leadershipForm.imageUrl} onChange={e => setLeadershipForm({ ...leadershipForm, imageUrl: e.target.value })}
-                        placeholder="https://..." className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Photo</label>
+                      <div className="flex gap-2 mb-2">
+                        {['file','url'].map(m => (
+                          <button key={m} type="button" onClick={() => setLeadershipForm({ ...leadershipForm, photoMode: m })}
+                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${(leadershipForm.photoMode||'file')===m?'bg-[#1B2A4A] text-white':'bg-gray-100 text-gray-700'}`}>
+                            {m==='file'?'Upload from Device':'Paste URL'}
+                          </button>
+                        ))}
+                      </div>
+                      {(leadershipForm.photoMode||'file')==='url' ? (
+                        <input value={leadershipForm.imageUrl||''} onChange={e => setLeadershipForm({ ...leadershipForm, imageUrl: e.target.value })}
+                          placeholder="https://..." className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                      ) : (
+                        <div>
+                          <input type="file" accept="image/*" onChange={e => {
+                            const file = e.target.files[0]; if (!file) return;
+                            const reader = new FileReader();
+                            reader.onloadend = () => setLeadershipForm({ ...leadershipForm, imageUrl: reader.result });
+                            reader.readAsDataURL(file);
+                          }} className="w-full border border-gray-300 rounded-lg px-3 py-2" />
+                          {leadershipForm.imageUrl && (
+                            <img src={leadershipForm.imageUrl} alt="Preview" className="mt-2 h-24 w-24 object-cover rounded-lg border border-gray-200" />
+                          )}
+                        </div>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Order (0 = first)</label>
@@ -785,8 +806,56 @@ export default function Dashboard() {
                   </div>
                   <ImageUpload label="School Logo" value={infoForm.logoUrl} onChange={v => setInfoForm({ ...infoForm, logoUrl: v })}
                     hint="Recommended: 200×200px PNG with transparent background." />
-                  <ImageUpload label="Banner Image" value={infoForm.bannerUrl} onChange={v => setInfoForm({ ...infoForm, bannerUrl: v })}
-                    hint="Recommended: 1920×600px JPG. Hero banner on homepage." />
+                  {/* Multi-Banner Upload */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Banner Images (up to 5 for slideshow)</label>
+                    {(() => {
+                      let banners = [];
+                      try { banners = JSON.parse(infoForm.bannerUrl || '[]'); if (!Array.isArray(banners)) banners = banners ? [banners] : []; } catch { banners = infoForm.bannerUrl ? [infoForm.bannerUrl] : []; }
+                      const updateBanners = (newBanners) => setInfoForm({ ...infoForm, bannerUrl: JSON.stringify(newBanners) });
+                      return (
+                        <div className="space-y-3">
+                          {banners.map((b, i) => (
+                            <div key={i} className="flex gap-2 items-center">
+                              <div className="flex-1 flex gap-2 items-center bg-gray-50 border border-gray-200 rounded-lg p-2">
+                                {b && <img src={b} alt="banner" className="h-12 w-20 object-cover rounded" />}
+                                <span className="text-xs text-gray-500 truncate flex-1">{b ? 'Image ' + (i+1) : 'Empty'}</span>
+                              </div>
+                              <button type="button" onClick={() => { const nb = banners.filter((_, idx) => idx !== i); updateBanners(nb); }}
+                                className="text-red-400 hover:text-red-600 text-sm px-2">✕</button>
+                            </div>
+                          ))}
+                          {banners.length < 5 && (
+                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                              <p className="text-xs text-gray-500 mb-2">Add banner image {banners.length + 1} of 5</p>
+                              <div className="flex gap-2 mb-2">
+                                <label className="flex-1">
+                                  <span className="block text-xs text-gray-600 mb-1">Upload from device</span>
+                                  <input type="file" accept="image/*" onChange={e => {
+                                    const file = e.target.files[0]; if (!file) return;
+                                    const reader = new FileReader();
+                                    reader.onloadend = () => updateBanners([...banners, reader.result]);
+                                    reader.readAsDataURL(file);
+                                  }} className="w-full border border-gray-300 rounded px-2 py-1 text-sm" />
+                                </label>
+                              </div>
+                              <div>
+                                <span className="block text-xs text-gray-600 mb-1">Or paste URL</span>
+                                <div className="flex gap-2">
+                                  <input type="text" placeholder="https://..."
+                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (e.target.value) { updateBanners([...banners, e.target.value]); e.target.value = ''; } } }}
+                                    className="flex-1 border border-gray-300 rounded px-2 py-1 text-sm" />
+                                  <button type="button" onClick={e => { const input = e.target.previousSibling; if (input.value) { updateBanners([...banners, input.value]); input.value = ''; } }}
+                                    className="bg-[#1B2A4A] text-white px-3 py-1 rounded text-sm">Add</button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          <p className="text-xs text-gray-400">Recommended: 1920×600px JPG. These images will rotate as slideshow on homepage.</p>
+                        </div>
+                      );
+                    })()}
+                  </div>
                   <ImageUpload label="About Section Image" value={infoForm.aboutImageUrl} onChange={v => setInfoForm({ ...infoForm, aboutImageUrl: v })}
                     hint="Recommended: 800×500px JPG." />
                   <div className="grid grid-cols-2 gap-4">

@@ -12,12 +12,18 @@ const Hero = () => {
   const { tenant, gallery } = useTenant();
   const [currentPhoto, setCurrentPhoto] = useState(0);
 
-  // Use bannerUrl first, then gallery, then fallback
-  const photos = tenant?.bannerUrl
-    ? [tenant.bannerUrl]
-    : gallery && gallery.length > 0
-      ? gallery.map(g => g.imageUrl)
-      : SCHOOL_PHOTOS;
+  // Parse bannerUrl — supports single URL or JSON array of URLs
+  const parseBanners = (bannerUrl) => {
+    if (!bannerUrl) return null;
+    try {
+      const parsed = JSON.parse(bannerUrl);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch {}
+    return [bannerUrl];
+  };
+
+  const photos = parseBanners(tenant?.bannerUrl) ||
+    (gallery && gallery.length > 0 ? gallery.map(g => g.imageUrl) : SCHOOL_PHOTOS);
 
   useEffect(() => {
     if (photos.length <= 1) return;
@@ -67,10 +73,11 @@ const Hero = () => {
                   className="w-20 h-20 rounded-full object-cover border-4 border-white border-opacity-50 shadow-xl" />
               </div>
             )}
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight drop-shadow-lg">
-              {tenant.schoolName}
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-tight drop-shadow-lg tracking-tight" style={{ fontFamily: "'Georgia', serif" }}>
+              <span className="text-white block">{tenant.schoolName.split(' ').slice(0, Math.ceil(tenant.schoolName.split(' ').length / 2)).join(' ')}</span>
+              <span className="block" style={{ color: tenant.accentColor }}>{tenant.schoolName.split(' ').slice(Math.ceil(tenant.schoolName.split(' ').length / 2)).join(' ')}</span>
             </h1>
-            <p className="text-xl md:text-2xl mb-6 opacity-90 drop-shadow">
+            <p className="text-xl md:text-2xl mb-6 opacity-90 drop-shadow font-light tracking-widest uppercase">
               Excellence in Education Since {tenant.establishedYear}
             </p>
             <p className="text-lg mb-10 max-w-2xl mx-auto opacity-85 drop-shadow">
@@ -78,12 +85,13 @@ const Hero = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
-                className="px-8 py-3 bg-white font-semibold rounded-lg hover:bg-gray-100 transition shadow-lg"
-                style={{ color: tenant.primaryColor }}>
+                className="px-8 py-4 font-bold rounded-lg transition shadow-lg text-white uppercase tracking-wide"
+                style={{ backgroundColor: tenant.accentColor }}>
                 Learn More
               </button>
               <button onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-                className="px-8 py-3 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:bg-opacity-10 transition">
+                className="px-8 py-4 border-2 text-white font-bold rounded-lg hover:bg-white hover:bg-opacity-10 transition uppercase tracking-wide"
+                style={{ borderColor: tenant.accentColor, color: tenant.accentColor }}>
                 Contact Us
               </button>
             </div>
