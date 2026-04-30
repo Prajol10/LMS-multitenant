@@ -29,17 +29,19 @@ export const TenantProvider = ({ children, schoolSlug }) => {
       const tenantData = await ApiService.getSchoolByTenant(identifier);
       setTenant(tenantData);
 
-      const [noticesData, galleryData, programsData, studentsData] = await Promise.all([
+      const [noticesData, galleryData, programsData, studentsData, leadershipData] = await Promise.all([
         ApiService.getNoticesByTenant(identifier),
         ApiService.getGalleryByTenant(identifier),
         ApiService.getProgramsByTenant(identifier).catch(() => []),
         ApiService.getStudentsByTenant(identifier).catch(() => []),
+        ApiService.getLeadershipByTenant(identifier).catch(() => []),
       ]);
 
       setNotices(noticesData);
       setGallery(galleryData);
       setPrograms(programsData);
       setStudents(studentsData);
+      setLeadership(leadershipData);
     } catch (err) {
       setError(err.message || 'Failed to load school data');
     } finally {
