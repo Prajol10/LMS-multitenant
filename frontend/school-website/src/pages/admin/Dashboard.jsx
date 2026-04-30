@@ -145,7 +145,7 @@ export default function Dashboard() {
     e.preventDefault(); setSavingInfo(true);
     const res = await fetch(`${API}/admin/school`, {
       method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ ...infoForm, establishedYear: infoForm.establishedYear ? parseInt(infoForm.establishedYear) : null })
+      body: JSON.stringify({ ...infoForm, establishedYear: infoForm.establishedYear ? parseInt(infoForm.establishedYear) : null, totalStudents: infoForm.totalStudents ? parseInt(infoForm.totalStudents) : null, totalTeachers: infoForm.totalTeachers ? parseInt(infoForm.totalTeachers) : null, totalPrograms: infoForm.totalPrograms ? parseInt(infoForm.totalPrograms) : null, totalStaff: infoForm.totalStaff ? parseInt(infoForm.totalStaff) : null })
     });
     if (res.ok) { showMsg('School info saved!'); setEditingInfo(false); fetchData(); }
     setSavingInfo(false);
@@ -647,6 +647,28 @@ export default function Dashboard() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Accent Color</label>
                       <input type="color" value={infoForm.accentColor} onChange={e => setInfoForm({ ...infoForm, accentColor: e.target.value })}
                         className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Total Students</label>
+                      <input type="number" value={infoForm.totalStudents || ''} onChange={e => setInfoForm({ ...infoForm, totalStudents: e.target.value })}
+                        placeholder="e.g. 500" className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Total Teachers</label>
+                      <input type="number" value={infoForm.totalTeachers || ''} onChange={e => setInfoForm({ ...infoForm, totalTeachers: e.target.value })}
+                        placeholder="e.g. 50" className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Total Programs</label>
+                      <input type="number" value={infoForm.totalPrograms || ''} onChange={e => setInfoForm({ ...infoForm, totalPrograms: e.target.value })}
+                        placeholder="e.g. 25" className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Total Staff</label>
+                      <input type="number" value={infoForm.totalStaff || ''} onChange={e => setInfoForm({ ...infoForm, totalStaff: e.target.value })}
+                        placeholder="e.g. 30" className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
                     </div>
                   </div>
                   <div>

@@ -14,11 +14,8 @@ const SCHOOLS_FALLBACK = [
 export default function LandingPage() {
   const navigate = useNavigate();
   const [schools, setSchools] = useState(SCHOOLS_FALLBACK);
-  const [loadingSchools, setLoadingSchools] = useState(true);
 
   useEffect(() => {
-    // Show fallback immediately, then update with real data
-    setLoadingSchools(false);
     fetch(`${API}/school/all`)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(data => {
@@ -28,7 +25,11 @@ export default function LandingPage() {
             subdomain: s.subdomain,
             color: s.primaryColor || s.color,
             est: s.establishedYear || s.est,
-            logoUrl: s.logoUrl
+            logoUrl: s.logoUrl,
+            totalStudents: s.totalStudents,
+            totalTeachers: s.totalTeachers,
+            totalPrograms: s.totalPrograms,
+            totalStaff: s.totalStaff,
           })));
         }
       })
@@ -43,8 +44,7 @@ export default function LandingPage() {
           <div className="w-9 h-9 bg-[#C9A84C] rounded-lg flex items-center justify-center font-bold text-[#1B2A4A]">I</div>
           <span className="text-xl font-bold">Dailo Technology</span>
         </div>
-        <button
-          onClick={() => navigate('/superadmin/login')}
+        <button onClick={() => navigate('/superadmin/login')}
           className="bg-[#C9A84C] text-[#1B2A4A] px-4 py-2 rounded-lg font-medium hover:bg-yellow-400 transition text-sm">
           Admin Login
         </button>
@@ -67,15 +67,50 @@ export default function LandingPage() {
               <div className="h-3" style={{ backgroundColor: school.color }}></div>
               <div className="p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
-                    style={{ backgroundColor: school.color }}>
-                    {school.name[0]}
-                  </div>
+                  {school.logoUrl ? (
+                    <img src={school.logoUrl} alt={school.name} className="w-12 h-12 rounded-full object-contain border border-gray-200 p-0.5" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
+                      style={{ backgroundColor: school.color }}>
+                      {school.name[0]}
+                    </div>
+                  )}
                   <div>
                     <h3 className="font-bold text-gray-800">{school.name}</h3>
                     <p className="text-sm text-gray-500">Est. {school.est}</p>
                   </div>
                 </div>
+
+                {/* Stats */}
+                {(school.totalStudents || school.totalTeachers || school.totalPrograms || school.totalStaff) && (
+                  <div className="grid grid-cols-2 gap-2 mb-4">
+                    {school.totalStudents && (
+                      <div className="bg-gray-50 rounded-lg px-3 py-2 text-center">
+                        <p className="text-lg font-bold" style={{ color: school.color }}>{school.totalStudents}+</p>
+                        <p className="text-xs text-gray-500">Students</p>
+                      </div>
+                    )}
+                    {school.totalTeachers && (
+                      <div className="bg-gray-50 rounded-lg px-3 py-2 text-center">
+                        <p className="text-lg font-bold" style={{ color: school.color }}>{school.totalTeachers}+</p>
+                        <p className="text-xs text-gray-500">Teachers</p>
+                      </div>
+                    )}
+                    {school.totalPrograms && (
+                      <div className="bg-gray-50 rounded-lg px-3 py-2 text-center">
+                        <p className="text-lg font-bold" style={{ color: school.color }}>{school.totalPrograms}+</p>
+                        <p className="text-xs text-gray-500">Programs</p>
+                      </div>
+                    )}
+                    {school.totalStaff && (
+                      <div className="bg-gray-50 rounded-lg px-3 py-2 text-center">
+                        <p className="text-lg font-bold" style={{ color: school.color }}>{school.totalStaff}+</p>
+                        <p className="text-xs text-gray-500">Staff</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className="flex gap-2 mt-4">
                   <a href={`/${school.subdomain}`}
                     className="flex-1 text-center py-2 rounded-lg text-sm font-medium text-white transition"

@@ -19,6 +19,10 @@ namespace SchoolWebsite.DTOs
         public string? MapEmbedUrl { get; set; }
         public string? VideoUrl { get; set; }
         public string? AboutImageUrl { get; set; }
+        public int? TotalStudents { get; set; }
+        public int? TotalTeachers { get; set; }
+        public int? TotalPrograms { get; set; }
+        public int? TotalStaff { get; set; }
     }
 
     public class UpdateTenantDto
@@ -40,6 +44,10 @@ namespace SchoolWebsite.DTOs
         public string? MapEmbedUrl { get; set; }
         public string? VideoUrl { get; set; }
         public string? AboutImageUrl { get; set; }
+        public int? TotalStudents { get; set; }
+        public int? TotalTeachers { get; set; }
+        public int? TotalPrograms { get; set; }
+        public int? TotalStaff { get; set; }
     }
 
     public class TenantDto
@@ -62,6 +70,10 @@ namespace SchoolWebsite.DTOs
         public string? MapEmbedUrl { get; set; }
         public string? VideoUrl { get; set; }
         public string? AboutImageUrl { get; set; }
+        public int? TotalStudents { get; set; }
+        public int? TotalTeachers { get; set; }
+        public int? TotalPrograms { get; set; }
+        public int? TotalStaff { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
     }

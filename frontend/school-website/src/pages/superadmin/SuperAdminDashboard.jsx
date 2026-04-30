@@ -11,7 +11,8 @@ export default function SuperAdminDashboard() {
   const [form, setForm] = useState({
     schoolName: '', subdomain: '', primaryColor: '#1B2A4A',
     accentColor: '#C9A84C', aboutText: '', address: '',
-    phone: '', email: '', establishedYear: ''
+    phone: '', email: '', establishedYear: '',
+    totalStudents: '', totalTeachers: '', totalPrograms: '', totalStaff: ''
   });
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
@@ -34,7 +35,7 @@ export default function SuperAdminDashboard() {
   };
 
   const resetForm = () => {
-    setForm({ schoolName: '', subdomain: '', primaryColor: '#1B2A4A', accentColor: '#C9A84C', aboutText: '', address: '', phone: '', email: '', establishedYear: '' });
+    setForm({ schoolName: '', subdomain: '', primaryColor: '#1B2A4A', accentColor: '#C9A84C', aboutText: '', address: '', phone: '', email: '', establishedYear: '', totalStudents: '', totalTeachers: '', totalPrograms: '', totalStaff: '' });
     setEditingSchool(null);
     setShowForm(false);
   };
@@ -50,7 +51,7 @@ export default function SuperAdminDashboard() {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ ...form, establishedYear: form.establishedYear ? parseInt(form.establishedYear) : null })
+        body: JSON.stringify({ ...form, establishedYear: form.establishedYear ? parseInt(form.establishedYear) : null, totalStudents: form.totalStudents ? parseInt(form.totalStudents) : null, totalTeachers: form.totalTeachers ? parseInt(form.totalTeachers) : null, totalPrograms: form.totalPrograms ? parseInt(form.totalPrograms) : null, totalStaff: form.totalStaff ? parseInt(form.totalStaff) : null })
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.message || data || 'Failed');
@@ -75,6 +76,10 @@ export default function SuperAdminDashboard() {
       establishedYear: school.establishedYear || '',
       logoUrl: school.logoUrl || '',
       bannerUrl: school.bannerUrl || '',
+      totalStudents: school.totalStudents || '',
+      totalTeachers: school.totalTeachers || '',
+      totalPrograms: school.totalPrograms || '',
+      totalStaff: school.totalStaff || '',
       facebookUrl: school.facebookUrl || '',
       instagramUrl: school.instagramUrl || '',
       websiteUrl: school.websiteUrl || '',
@@ -198,6 +203,26 @@ export default function SuperAdminDashboard() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Established Year</label>
                 <input type="number" value={form.establishedYear} onChange={e => setForm({ ...form, establishedYear: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Total Students</label>
+                <input type="number" value={form.totalStudents || ''} onChange={e => setForm({ ...form, totalStudents: e.target.value })}
+                  placeholder="e.g. 500" className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Total Teachers</label>
+                <input type="number" value={form.totalTeachers || ''} onChange={e => setForm({ ...form, totalTeachers: e.target.value })}
+                  placeholder="e.g. 50" className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Total Programs</label>
+                <input type="number" value={form.totalPrograms || ''} onChange={e => setForm({ ...form, totalPrograms: e.target.value })}
+                  placeholder="e.g. 25" className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Total Staff</label>
+                <input type="number" value={form.totalStaff || ''} onChange={e => setForm({ ...form, totalStaff: e.target.value })}
+                  placeholder="e.g. 30" className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>

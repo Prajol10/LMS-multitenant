@@ -54,6 +54,10 @@ namespace SchoolWebsite.Controllers
             tenant.MapEmbedUrl = dto.MapEmbedUrl ?? tenant.MapEmbedUrl;
             tenant.VideoUrl = dto.VideoUrl ?? tenant.VideoUrl;
             tenant.AboutImageUrl = dto.AboutImageUrl ?? tenant.AboutImageUrl;
+            tenant.TotalStudents = dto.TotalStudents ?? tenant.TotalStudents;
+            tenant.TotalTeachers = dto.TotalTeachers ?? tenant.TotalTeachers;
+            tenant.TotalPrograms = dto.TotalPrograms ?? tenant.TotalPrograms;
+            tenant.TotalStaff = dto.TotalStaff ?? tenant.TotalStaff;
             await _context.SaveChangesAsync();
             return NoContent();
         }

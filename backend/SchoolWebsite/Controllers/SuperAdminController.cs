@@ -54,7 +54,11 @@ namespace SchoolWebsite.Controllers
                 WebsiteUrl = dto.WebsiteUrl,
                 MapEmbedUrl = dto.MapEmbedUrl,
                 VideoUrl = dto.VideoUrl,
-                AboutImageUrl = dto.AboutImageUrl
+                AboutImageUrl = dto.AboutImageUrl,
+                TotalStudents = dto.TotalStudents,
+                TotalTeachers = dto.TotalTeachers,
+                TotalPrograms = dto.TotalPrograms,
+                TotalStaff = dto.TotalStaff
             };
             _context.Tenants.Add(tenant);
             await _context.SaveChangesAsync();
@@ -85,6 +89,10 @@ namespace SchoolWebsite.Controllers
             tenant.MapEmbedUrl = dto.MapEmbedUrl ?? tenant.MapEmbedUrl;
             tenant.VideoUrl = dto.VideoUrl ?? tenant.VideoUrl;
             tenant.AboutImageUrl = dto.AboutImageUrl ?? tenant.AboutImageUrl;
+            tenant.TotalStudents = dto.TotalStudents ?? tenant.TotalStudents;
+            tenant.TotalTeachers = dto.TotalTeachers ?? tenant.TotalTeachers;
+            tenant.TotalPrograms = dto.TotalPrograms ?? tenant.TotalPrograms;
+            tenant.TotalStaff = dto.TotalStaff ?? tenant.TotalStaff;
 
             await _context.SaveChangesAsync();
             return NoContent();
@@ -146,6 +154,10 @@ namespace SchoolWebsite.Controllers
             MapEmbedUrl = t.MapEmbedUrl,
             VideoUrl = t.VideoUrl,
             AboutImageUrl = t.AboutImageUrl,
+            TotalStudents = t.TotalStudents,
+            TotalTeachers = t.TotalTeachers,
+            TotalPrograms = t.TotalPrograms,
+            TotalStaff = t.TotalStaff,
             IsActive = t.IsActive,
             CreatedAt = t.CreatedAt
         };

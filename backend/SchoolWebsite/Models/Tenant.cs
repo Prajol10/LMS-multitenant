@@ -34,6 +34,12 @@ namespace SchoolWebsite.Models
         public string? VideoUrl { get; set; }
         public string? AboutImageUrl { get; set; }
 
+        // Stats
+        public int? TotalStudents { get; set; }
+        public int? TotalTeachers { get; set; }
+        public int? TotalPrograms { get; set; }
+        public int? TotalStaff { get; set; }
+
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
