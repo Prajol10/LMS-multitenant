@@ -1,7 +1,43 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import MDEditor from '@uiw/react-md-editor';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5071/api';
+
+const ImageUpload = ({ label, value, onChange, hint }) => {
+  const [mode, setMode] = useState('url');
+  return (
+    <div className="col-span-2">
+      <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+      <div className="flex gap-2 mb-2">
+        {['url', 'file'].map(m => (
+          <button key={m} type="button" onClick={() => setMode(m)}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${mode === m ? 'bg-[#1B2A4A] text-white' : 'bg-gray-100 text-gray-700'}`}>
+            {m === 'url' ? 'Paste URL' : 'Upload from Device'}
+          </button>
+        ))}
+      </div>
+      {mode === 'url' ? (
+        <input value={value || ''} onChange={e => onChange(e.target.value)}
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]"
+          placeholder="https://..." />
+      ) : (
+        <div>
+          <input type="file" accept="image/*" onChange={e => {
+            const file = e.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onloadend = () => onChange(reader.result);
+            reader.readAsDataURL(file);
+          }} className="w-full border border-gray-300 rounded-lg px-3 py-2" />
+          {value && (
+            <img src={value} alt="Preview" className="mt-2 h-24 object-contain rounded-lg border border-gray-200 p-1 bg-gray-50" />
+          )}
+        </div>
+      )}
+      {hint && <p className="text-xs text-gray-400 mt-1">{hint}</p>}
+    </div>
+  );
+};
 
 export default function SuperAdminDashboard() {
   const [schools, setSchools] = useState([]);
@@ -12,7 +48,10 @@ export default function SuperAdminDashboard() {
     schoolName: '', subdomain: '', primaryColor: '#1B2A4A',
     accentColor: '#C9A84C', aboutText: '', address: '',
     phone: '', email: '', establishedYear: '',
-    totalStudents: '', totalTeachers: '', totalPrograms: '', totalStaff: ''
+    totalStudents: '', totalTeachers: '', totalPrograms: '',
+    logoUrl: '', bannerUrl: '',
+    facebookUrl: '', instagramUrl: '', websiteUrl: '',
+    mapEmbedUrl: '', videoUrl: ''
   });
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
@@ -35,7 +74,15 @@ export default function SuperAdminDashboard() {
   };
 
   const resetForm = () => {
-    setForm({ schoolName: '', subdomain: '', primaryColor: '#1B2A4A', accentColor: '#C9A84C', aboutText: '', address: '', phone: '', email: '', establishedYear: '', totalStudents: '', totalTeachers: '', totalPrograms: '', totalStaff: '' });
+    setForm({
+      schoolName: '', subdomain: '', primaryColor: '#1B2A4A',
+      accentColor: '#C9A84C', aboutText: '', address: '',
+      phone: '', email: '', establishedYear: '',
+      totalStudents: '', totalTeachers: '', totalPrograms: '',
+      logoUrl: '', bannerUrl: '',
+      facebookUrl: '', instagramUrl: '', websiteUrl: '',
+      mapEmbedUrl: '', videoUrl: ''
+    });
     setEditingSchool(null);
     setShowForm(false);
   };
@@ -51,7 +98,13 @@ export default function SuperAdminDashboard() {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ ...form, establishedYear: form.establishedYear ? parseInt(form.establishedYear) : null, totalStudents: form.totalStudents ? parseInt(form.totalStudents) : null, totalTeachers: form.totalTeachers ? parseInt(form.totalTeachers) : null, totalPrograms: form.totalPrograms ? parseInt(form.totalPrograms) : null, totalStaff: form.totalStaff ? parseInt(form.totalStaff) : null })
+        body: JSON.stringify({
+          ...form,
+          establishedYear: form.establishedYear ? parseInt(form.establishedYear) : null,
+          totalStudents: form.totalStudents ? parseInt(form.totalStudents) : null,
+          totalTeachers: form.totalTeachers ? parseInt(form.totalTeachers) : null,
+          totalPrograms: form.totalPrograms ? parseInt(form.totalPrograms) : null,
+        })
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.message || data || 'Failed');
@@ -79,7 +132,6 @@ export default function SuperAdminDashboard() {
       totalStudents: school.totalStudents || '',
       totalTeachers: school.totalTeachers || '',
       totalPrograms: school.totalPrograms || '',
-      totalStaff: school.totalStaff || '',
       facebookUrl: school.facebookUrl || '',
       instagramUrl: school.instagramUrl || '',
       websiteUrl: school.websiteUrl || '',
@@ -143,7 +195,7 @@ export default function SuperAdminDashboard() {
         </div>
       </div>
 
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-8 overflow-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-[#1B2A4A]">All Schools</h1>
           <button onClick={() => { resetForm(); setShowForm(!showForm); }}
@@ -162,18 +214,22 @@ export default function SuperAdminDashboard() {
           <div className="bg-white rounded-xl shadow p-6 mb-6">
             <h2 className="text-lg font-bold text-[#1B2A4A] mb-4">{editingSchool ? `Edit: ${editingSchool.schoolName}` : 'Create New School'}</h2>
             <form onSubmit={handleSubmitSchool} className="grid grid-cols-2 gap-4">
+
+              {/* Basic Info */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">School Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">School Name *</label>
                 <input value={form.schoolName} onChange={e => setForm({ ...form, schoolName: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" required />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Subdomain {editingSchool && <span className="text-gray-400">(cannot change)</span>}</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Subdomain {editingSchool && <span className="text-gray-400 text-xs">(cannot change)</span>}</label>
                 <input value={form.subdomain}
                   onChange={e => !editingSchool && setForm({ ...form, subdomain: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '') })}
                   className={`w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A] ${editingSchool ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   placeholder="e.g. ratobangala" required readOnly={!!editingSchool} />
               </div>
+
+              {/* Colors */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Primary Color</label>
                 <input type="color" value={form.primaryColor} onChange={e => setForm({ ...form, primaryColor: e.target.value })}
@@ -184,6 +240,8 @@ export default function SuperAdminDashboard() {
                 <input type="color" value={form.accentColor} onChange={e => setForm({ ...form, accentColor: e.target.value })}
                   className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer" />
               </div>
+
+              {/* Contact */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
                 <input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })}
@@ -204,6 +262,8 @@ export default function SuperAdminDashboard() {
                 <input type="number" value={form.establishedYear} onChange={e => setForm({ ...form, establishedYear: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
               </div>
+
+              {/* Stats — no Total Staff */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Total Students</label>
                 <input type="number" value={form.totalStudents || ''} onChange={e => setForm({ ...form, totalStudents: e.target.value })}
@@ -219,26 +279,59 @@ export default function SuperAdminDashboard() {
                 <input type="number" value={form.totalPrograms || ''} onChange={e => setForm({ ...form, totalPrograms: e.target.value })}
                   placeholder="e.g. 25" className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
               </div>
+
+              {/* Social */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Total Staff</label>
-                <input type="number" value={form.totalStaff || ''} onChange={e => setForm({ ...form, totalStaff: e.target.value })}
-                  placeholder="e.g. 30" className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Facebook URL</label>
+                <input value={form.facebookUrl || ''} onChange={e => setForm({ ...form, facebookUrl: e.target.value })}
+                  placeholder="https://facebook.com/..." className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
-                <input value={form.logoUrl || ''} onChange={e => setForm({ ...form, logoUrl: e.target.value })}
+                <label className="block text-sm font-medium text-gray-700 mb-1">Instagram URL</label>
+                <input value={form.instagramUrl || ''} onChange={e => setForm({ ...form, instagramUrl: e.target.value })}
+                  placeholder="https://instagram.com/..." className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
+                <input value={form.websiteUrl || ''} onChange={e => setForm({ ...form, websiteUrl: e.target.value })}
                   placeholder="https://..." className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Banner URL</label>
-                <input value={form.bannerUrl || ''} onChange={e => setForm({ ...form, bannerUrl: e.target.value })}
-                  placeholder="https://..." className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">YouTube Video URL</label>
+                <input value={form.videoUrl || ''} onChange={e => setForm({ ...form, videoUrl: e.target.value })}
+                  placeholder="https://youtube.com/watch?v=..." className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
               </div>
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">About Text</label>
-                <textarea value={form.aboutText} onChange={e => setForm({ ...form, aboutText: e.target.value })}
-                  rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Google Maps Embed URL</label>
+                <input value={form.mapEmbedUrl || ''} onChange={e => setForm({ ...form, mapEmbedUrl: e.target.value })}
+                  placeholder="https://www.google.com/maps/embed?pb=..." className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                <p className="text-xs text-gray-400 mt-1">Google Maps → Share → Embed a map → copy the src URL only</p>
               </div>
+
+              {/* Logo Upload */}
+              <ImageUpload label="School Logo" value={form.logoUrl}
+                onChange={v => setForm({ ...form, logoUrl: v })}
+                hint="Recommended: 200×200px PNG with transparent background" />
+
+              {/* Banner Upload */}
+              <ImageUpload label="Banner Image" value={form.bannerUrl}
+                onChange={v => setForm({ ...form, bannerUrl: v })}
+                hint="Recommended: 1920×600px JPG. Hero banner on homepage." />
+
+              {/* About with MDEditor */}
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">About School</label>
+                <div data-color-mode="light">
+                  <MDEditor
+                    value={form.aboutText}
+                    onChange={val => setForm({ ...form, aboutText: val || '' })}
+                    preview="edit"
+                    height={250}
+                  />
+                </div>
+                <p className="text-xs text-gray-400 mt-1">Use the toolbar to add headings, bold, lists, etc.</p>
+              </div>
+
               <div className="col-span-2 flex gap-3">
                 <button type="submit" disabled={submitting}
                   className="bg-[#1B2A4A] text-white px-6 py-2 rounded-lg hover:bg-[#243660] transition disabled:opacity-50">
@@ -258,20 +351,31 @@ export default function SuperAdminDashboard() {
             {schools.map(school => (
               <div key={school.id} className="bg-white rounded-xl shadow p-6">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
-                    style={{ backgroundColor: school.primaryColor }}>
-                    {school.schoolName[0]}
-                  </div>
+                  {school.logoUrl ? (
+                    <img src={school.logoUrl} alt={school.schoolName} className="w-10 h-10 rounded-full object-contain border border-gray-200 p-0.5" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
+                      style={{ backgroundColor: school.primaryColor }}>
+                      {school.schoolName[0]}
+                    </div>
+                  )}
                   <div>
                     <h3 className="font-bold text-gray-800">{school.schoolName}</h3>
                     <p className="text-sm text-gray-500">{school.subdomain}</p>
                   </div>
                 </div>
-                <div className="text-sm text-gray-600 space-y-1 mb-4">
+                <div className="text-sm text-gray-600 space-y-1 mb-3">
                   <p>📍 {school.address || 'No address'}</p>
                   <p>📧 {school.email || 'No email'}</p>
                   <p>📅 Est. {school.establishedYear || 'N/A'}</p>
                 </div>
+                {(school.totalStudents || school.totalTeachers || school.totalPrograms) && (
+                  <div className="flex gap-2 mb-3 flex-wrap">
+                    {school.totalStudents && <span className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full">👥 {school.totalStudents}+ Students</span>}
+                    {school.totalTeachers && <span className="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-full">👨‍🏫 {school.totalTeachers}+ Teachers</span>}
+                    {school.totalPrograms && <span className="px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded-full">📚 {school.totalPrograms}+ Programs</span>}
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-2 mb-3">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${school.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                     {school.isActive ? 'Active' : 'Inactive'}
