@@ -856,8 +856,6 @@ export default function Dashboard() {
                       );
                     })()}
                   </div>
-                  <ImageUpload label="About Section Image" value={infoForm.aboutImageUrl} onChange={v => setInfoForm({ ...infoForm, aboutImageUrl: v })}
-                    hint="Recommended: 800×500px JPG." />
                   <div className="grid grid-cols-2 gap-4">
                     {[
                       { key: 'facebookUrl', label: 'Facebook URL', placeholder: 'https://facebook.com/...' },
