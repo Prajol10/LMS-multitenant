@@ -45,23 +45,24 @@ const Hero = () => {
           </div>
         ))}
 
+        <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.38)' }} />
         <div className="absolute inset-0"
-          style={{ background: `linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.65) 100%)` }} />
-        <div className="absolute inset-0"
-          style={{ background: `linear-gradient(135deg, ${tenant.primaryColor}55 0%, transparent 60%)` }} />
+          style={{ background: `linear-gradient(to bottom, ${tenant.primaryColor}22 0%, transparent 40%, rgba(0,0,0,0.45) 100%)` }} />
 
         {photos.length > 1 && (
           <>
             <button onClick={() => setCurrentPhoto(prev => (prev - 1 + photos.length) % photos.length)}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white bg-opacity-20 hover:bg-opacity-40 text-white rounded-full p-3 transition">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 transition-all duration-200 hover:scale-110"
+              style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(4px)', border: '1.5px solid rgba(255,255,255,0.4)', borderRadius: '50%', padding: '12px', color: 'white' }}>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
               </svg>
             </button>
             <button onClick={() => setCurrentPhoto(prev => (prev + 1) % photos.length)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white bg-opacity-20 hover:bg-opacity-40 text-white rounded-full p-3 transition">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-20 transition-all duration-200 hover:scale-110"
+              style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(4px)', border: '1.5px solid rgba(255,255,255,0.4)', borderRadius: '50%', padding: '12px', color: 'white' }}>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
               </svg>
             </button>
           </>
