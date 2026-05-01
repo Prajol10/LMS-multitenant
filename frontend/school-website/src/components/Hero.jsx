@@ -45,9 +45,7 @@ const Hero = () => {
           </div>
         ))}
 
-        <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.38)' }} />
-        <div className="absolute inset-0"
-          style={{ background: `linear-gradient(to bottom, ${tenant.primaryColor}22 0%, transparent 40%, rgba(0,0,0,0.45) 100%)` }} />
+        <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.28)' }} />
 
         {photos.length > 1 && (
           <>
