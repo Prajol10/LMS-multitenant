@@ -41,11 +41,11 @@ const Hero = () => {
         {photos.map((photo, idx) => (
           <div key={idx} className="absolute inset-0 transition-opacity duration-1000"
             style={{ opacity: idx === currentPhoto ? 1 : 0 }}>
-            <img src={photo} alt={`School photo ${idx + 1}`} className="w-full h-full object-cover" />
+            <img src={photo} alt={`School photo ${idx + 1}`} className="w-full h-full object-cover" style={{ filter: 'blur(2px)', transform: 'scale(1.03)' }} />
           </div>
         ))}
 
-        <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.28)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.55), rgba(0,0,0,0.65))' }} />
 
         {photos.length > 1 && (
           <>
