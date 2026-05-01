@@ -7,7 +7,6 @@ const About = () => {
   const [expandedMsg, setExpandedMsg] = useState(null);
   if (!tenant) return null;
 
-  // Convert YouTube URL to embed format
   const getEmbedUrl = (url) => {
     if (!url) return null;
     if (url.includes('embed/')) return url;
@@ -20,7 +19,6 @@ const About = () => {
 
   return (
     <>
-      {/* About Section */}
       <section id="about" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -32,7 +30,6 @@ const About = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-center">
-            {/* Left: Text content (2 columns) */}
             <div className="lg:col-span-2">
               <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Welcome to {tenant.schoolName}</h3>
               <div
@@ -41,7 +38,6 @@ const About = () => {
               />
             </div>
 
-            {/* Right: Video or Image (3 columns - bigger) */}
             <div className="lg:col-span-3 relative">
               {videoUrl ? (
                 <div className="relative rounded-2xl overflow-hidden shadow-2xl" style={{ paddingTop: '56.25%' }}>
@@ -72,7 +68,6 @@ const About = () => {
         </div>
       </section>
 
-      {/* Messages Section — RBS style */}
       {leadership && leadership.length > 0 ? (
         <section id="messages" className="py-20 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
