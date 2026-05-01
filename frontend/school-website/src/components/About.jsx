@@ -7,62 +7,72 @@ const About = () => {
   const [expandedMsg, setExpandedMsg] = useState(null);
   if (!tenant) return null;
 
+  // Convert YouTube URL to embed format
+  const getEmbedUrl = (url) => {
+    if (!url) return null;
+    if (url.includes('embed/')) return url;
+    if (url.includes('watch?v=')) return url.replace('watch?v=', 'embed/');
+    if (url.includes('youtu.be/')) return url.replace('youtu.be/', 'youtube.com/embed/');
+    return url;
+  };
+
+  const videoUrl = getEmbedUrl(tenant.videoUrl);
+
   return (
     <>
       {/* About Section */}
-      <section id="about" className="py-20 bg-white">
+      <section id="about" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <p className="text-sm font-semibold uppercase tracking-widest mb-2" style={{ color: tenant.accentColor }}>
               WHO WE ARE
             </p>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">About Our School</h2>
+            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">About Our School</h2>
             <div className="w-20 h-1 mx-auto" style={{ backgroundColor: tenant.accentColor }}></div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Welcome to {tenant.schoolName}</h3>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-center">
+            {/* Left: Text content (2 columns) */}
+            <div className="lg:col-span-2">
+              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Welcome to {tenant.schoolName}</h3>
               <div
                 className="prose prose-lg prose-headings:text-gray-900 prose-headings:font-bold prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-p:text-gray-700 prose-strong:text-gray-900 prose-ul:list-disc prose-ol:list-decimal max-w-none mb-8"
                 dangerouslySetInnerHTML={{ __html: marked(tenant.aboutText || 'No description available.') }}
               />
-              <div className="grid grid-cols-3 gap-4 mt-8">
-                <div className="text-center p-4 rounded-xl" style={{ backgroundColor: tenant.primaryColor + '10' }}>
-                  <div className="text-2xl font-bold" style={{ color: tenant.primaryColor }}>{tenant.establishedYear || 'N/A'}</div>
-                  <div className="text-gray-600 text-sm mt-1">Established</div>
-                </div>
-                <div className="text-center p-4 rounded-xl" style={{ backgroundColor: tenant.accentColor + '15' }}>
-                  <div className="text-2xl font-bold" style={{ color: tenant.primaryColor }}>{tenant.totalStudents ? tenant.totalStudents + '+' : '500+'}</div>
-                  <div className="text-gray-600 text-sm mt-1">Students</div>
-                </div>
-                <div className="text-center p-4 rounded-xl" style={{ backgroundColor: tenant.primaryColor + '10' }}>
-                  <div className="text-2xl font-bold" style={{ color: tenant.primaryColor }}>{tenant.totalPrograms ? tenant.totalPrograms + '+' : '25+'}</div>
-                  <div className="text-gray-600 text-sm mt-1">Programs</div>
-                </div>
-              </div>
             </div>
 
-            <div className="relative">
-              {tenant.aboutImageUrl ? (
+            {/* Right: Video or Image (3 columns - bigger) */}
+            <div className="lg:col-span-3 relative">
+              {videoUrl ? (
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl" style={{ paddingTop: '56.25%' }}>
+                  <iframe
+                    src={videoUrl}
+                    title={`${tenant.schoolName} Video`}
+                    className="absolute inset-0 w-full h-full"
+                    style={{ border: 0 }}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              ) : tenant.aboutImageUrl ? (
                 <img src={tenant.aboutImageUrl} alt={`About ${tenant.schoolName}`}
-                  className="rounded-xl w-full h-96 object-cover shadow-xl" />
+                  className="rounded-2xl w-full h-[28rem] object-cover shadow-2xl" />
               ) : (
-                <div className="rounded-xl w-full h-96 flex items-center justify-center"
+                <div className="rounded-2xl w-full h-[28rem] flex items-center justify-center shadow-2xl"
                   style={{ backgroundColor: tenant.primaryColor + '15' }}>
                   <span className="text-gray-400">School Image</span>
                 </div>
               )}
-              <div className="absolute -bottom-4 -right-4 w-28 h-28 rounded-lg opacity-20"
+              <div className="absolute -bottom-4 -right-4 w-28 h-28 rounded-lg opacity-20 -z-10"
                 style={{ backgroundColor: tenant.accentColor }}></div>
-              <div className="absolute -top-4 -left-4 w-20 h-20 rounded-lg opacity-20"
+              <div className="absolute -top-4 -left-4 w-20 h-20 rounded-lg opacity-20 -z-10"
                 style={{ backgroundColor: tenant.primaryColor }}></div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Messages Section — RBS style, all on homepage */}
+      {/* Messages Section — RBS style */}
       {leadership && leadership.length > 0 ? (
         <section id="messages" className="py-20 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
