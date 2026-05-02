@@ -1,3 +1,4 @@
+import CalendarManager from '../../components/admin/CalendarManager';
 import { useState, useEffect } from 'react';
 import MDEditor from '@uiw/react-md-editor';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -245,6 +246,7 @@ export default function Dashboard() {
     { id: 'students', label: 'Students' },
     { id: 'messages', label: 'Messages', badge: messages.filter(m => !m.isRead).length },
     { id: 'info', label: 'School Info' },
+    { id: 'calendar', label: 'Calendar' },
   ];
 
   if (loading) return (
@@ -823,6 +825,10 @@ export default function Dashboard() {
                                 <span className="block text-xs text-gray-600 mb-1">Or paste URL</span>
                                 <div className="flex gap-2">
                                   <input type="text" placeholder="https://..."
+
+        {activeTab === "calendar" && (
+          <CalendarManager tenantId={schoolInfo?.id} />
+        )}
                                     onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (e.target.value) { updateBanners([...banners, e.target.value]); e.target.value = ''; } } }}
                                     className="flex-1 border border-gray-300 rounded px-2 py-1 text-sm" />
                                   <button type="button" onClick={e => { const input = e.target.previousSibling; if (input.value) { updateBanners([...banners, input.value]); input.value = ''; } }}

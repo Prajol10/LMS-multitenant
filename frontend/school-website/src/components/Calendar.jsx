@@ -10,11 +10,14 @@ const Calendar = () => {
   useEffect(() => {
     if (tenant?.id) {
       fetchEvents();
+    } else {
+      setLoading(false);
     }
   }, [tenant]);
 
   const fetchEvents = async () => {
     try {
+      setLoading(true);
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5071/api';
       const response = await fetch(`${apiUrl}/CalendarEvent/tenant/${tenant.id}`);
       if (response.ok) {
@@ -70,13 +73,16 @@ const Calendar = () => {
     );
   }
 
+  if (!tenant?.id) {
+    return null;
+  }
+
   return (
     <section id="calendar" className="py-16 bg-white">
       <div className="container mx-auto px-4">
         <h2 className="text-3xl font-bold text-center mb-8">School Calendar</h2>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Calendar Grid */}
           <div className="lg:col-span-2 bg-gray-50 rounded-lg shadow p-4">
             <div className="flex justify-between items-center mb-4">
               <button onClick={prevMonth} className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">&lt;</button>
@@ -116,7 +122,6 @@ const Calendar = () => {
             </div>
           </div>
 
-          {/* Upcoming Events */}
           <div className="bg-gray-50 rounded-lg shadow p-4">
             <h3 className="text-xl font-semibold mb-4">Upcoming Events</h3>
             {upcomingEvents.length === 0 ? (
