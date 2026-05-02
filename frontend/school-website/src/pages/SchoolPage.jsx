@@ -6,6 +6,7 @@ import About from '../components/About';
 import Programs from '../components/Programs';
 import Students from '../components/Students';
 import Notices from '../components/Notices';
+import Calendar from '../components/Calendar';
 import Gallery from '../components/Gallery';
 import Contact from '../components/Contact';
 import Footer from '../components/Footer';
@@ -38,6 +39,7 @@ const SchoolPage = () => {
       <Programs />
       <Students />
       <Notices />
+      <Calendar />
       <Gallery />
       <Contact />
       <Footer />
