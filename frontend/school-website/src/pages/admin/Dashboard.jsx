@@ -266,7 +266,7 @@ export default function Dashboard() {
           <h2 className="text-lg font-bold">{schoolInfo?.schoolName || 'School'}</h2>
           <p className="text-blue-300 text-sm">Admin Panel</p>
         </div>
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {tabs.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition flex items-center justify-between ${activeTab === tab.id ? 'bg-[#243660]' : 'hover:bg-[#243660]/50'}`}>
