@@ -68,6 +68,21 @@ namespace SchoolWebsite.Controllers
             return Ok(notices);
         }
 
+        [HttpGet("{subdomain}/events")]
+        public async Task<ActionResult> GetEventsBySubdomain(string subdomain)
+        {
+            var tenant = await _context.Tenants
+                .FirstOrDefaultAsync(t => t.Subdomain.ToLower() == subdomain.ToLower() && t.IsActive);
+            if (tenant == null) return NotFound("School not found");
+
+            var events = await _context.CalendarEvents
+                .Where(e => e.TenantId == tenant.Id)
+                .OrderBy(e => e.EventDate)
+                .Select(e => new { e.Id, e.Title, e.Description, e.EventDate, e.EventType, e.Location, e.CreatedAt })
+                .ToListAsync();
+            return Ok(events);
+        }
+
         [HttpGet("{subdomain}/gallery")]
         public async Task<ActionResult> GetGalleryBySubdomain(string subdomain)
         {

@@ -6,6 +6,7 @@ import LoginPage from './pages/admin/LoginPage';
 import Dashboard from './pages/admin/Dashboard';
 import SuperAdminDashboard from './pages/superadmin/SuperAdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import CalendarPage from './pages/CalendarPage';
 
 function SchoolWrapper({ school }) {
   return (
@@ -45,9 +46,8 @@ function App() {
           </ProtectedRoute>
         } />
         <Route path="/:school/admin" element={<LoginPage />} />
-        <Route path="/:school" element={
-          <SchoolRouteWrapper />
-        } />
+        <Route path="/:school/calendar" element={<CalendarRouteWrapper />} />
+        <Route path="/:school" element={<SchoolRouteWrapper />} />
         <Route path="/" element={<RootPage />} />
       </Routes>
     </BrowserRouter>
@@ -60,6 +60,16 @@ function SchoolRouteWrapper() {
   return (
     <TenantProvider schoolSlug={school}>
       <SchoolPage />
+    </TenantProvider>
+  );
+}
+
+function CalendarRouteWrapper() {
+  const location = useLocation();
+  const school = location.pathname.split('/')[1];
+  return (
+    <TenantProvider schoolSlug={school}>
+      <CalendarPage />
     </TenantProvider>
   );
 }

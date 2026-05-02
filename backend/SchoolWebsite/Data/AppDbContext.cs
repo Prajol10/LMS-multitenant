@@ -14,6 +14,7 @@ namespace SchoolWebsite.Data
         public DbSet<SchoolProgram> SchoolPrograms { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<LeadershipMessage> LeadershipMessages { get; set; }
+        public DbSet<CalendarEvent> CalendarEvents { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
