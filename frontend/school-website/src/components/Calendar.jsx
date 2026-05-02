@@ -8,7 +8,7 @@ const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
 
   useEffect(() => {
-    if (tenant?.id) {
+    if (tenant?.subdomain) {
       fetchEvents();
     } else {
       setLoading(false);
