@@ -144,6 +144,21 @@ namespace SchoolWebsite.Controllers
             return Ok(messages);
         }
 
+        [HttpGet("{subdomain}/calendar")]
+        public async Task<ActionResult> GetCalendarBySubdomain(string subdomain)
+        {
+            var tenant = await _context.Tenants
+                .FirstOrDefaultAsync(t => t.Subdomain.ToLower() == subdomain.ToLower() && t.IsActive);
+            if (tenant == null) return NotFound("School not found");
+
+            var events = await _context.CalendarEvents
+                .Where(e => e.TenantId == tenant.Id)
+                .OrderBy(e => e.EventDate)
+                .Select(e => new { e.Id, e.Title, e.Description, e.EventDate, e.EventType, e.Location })
+                .ToListAsync();
+            return Ok(events);
+        }
+
         [HttpPost("{subdomain}/contact")]
         public async Task<IActionResult> SubmitContact(string subdomain, [FromBody] ContactMessageDto dto)
         {

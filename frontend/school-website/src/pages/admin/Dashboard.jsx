@@ -240,13 +240,13 @@ export default function Dashboard() {
 
   const tabs = [
     { id: 'notices', label: 'Notices' },
+    { id: 'calendar', label: '📅 Calendar' },
     { id: 'leadership', label: 'Leadership Messages' },
     { id: 'gallery', label: 'Gallery' },
     { id: 'programs', label: 'Programs' },
     { id: 'students', label: 'Students' },
     { id: 'messages', label: 'Messages', badge: messages.filter(m => !m.isRead).length },
     { id: 'info', label: 'School Info' },
-    { id: 'calendar', label: 'Calendar' },
   ];
 
   if (loading) return (

@@ -19,13 +19,16 @@ const Calendar = () => {
     try {
       setLoading(true);
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5071/api';
-      const response = await fetch(`${apiUrl}/CalendarEvent/tenant/${tenant.id}`);
+      const response = await fetch(`${apiUrl}/school/${tenant.subdomain}/calendar`);
       if (response.ok) {
         const data = await response.json();
         setEvents(data);
+      } else {
+        setEvents([]);
       }
     } catch (error) {
       console.error('Failed to fetch events:', error);
+      setEvents([]);
     } finally {
       setLoading(false);
     }
@@ -71,10 +74,6 @@ const Calendar = () => {
         </div>
       </section>
     );
-  }
-
-  if (!tenant?.id) {
-    return null;
   }
 
   return (
