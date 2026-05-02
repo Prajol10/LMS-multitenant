@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolWebsite.Data;
@@ -14,6 +15,7 @@ namespace SchoolWebsite.Controllers
         public CalendarEventController(AppDbContext context) { _context = context; }
 
         [HttpPost]
+        [Authorize]
         public async Task<ActionResult<CalendarEventDto>> Create(CreateCalendarEventDto dto)
         {
             var ev = new CalendarEvent
@@ -26,10 +28,8 @@ namespace SchoolWebsite.Controllers
                 Location = dto.Location,
                 CreatedAt = DateTime.UtcNow
             };
-
             _context.CalendarEvents.Add(ev);
             await _context.SaveChangesAsync();
-
             return Ok(new CalendarEventDto
             {
                 Id = ev.Id,
@@ -50,8 +50,7 @@ namespace SchoolWebsite.Controllers
                 .Where(e => e.TenantId == tenantId)
                 .OrderBy(e => e.EventDate)
                 .ToListAsync();
-
-            var dtos = events.Select(e => new CalendarEventDto
+            return Ok(events.Select(e => new CalendarEventDto
             {
                 Id = e.Id,
                 TenantId = e.TenantId,
@@ -61,33 +60,30 @@ namespace SchoolWebsite.Controllers
                 EventType = e.EventType,
                 Location = e.Location,
                 CreatedAt = e.CreatedAt
-            }).ToList();
-
-            return Ok(dtos);
+            }).ToList());
         }
 
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> Update(int id, UpdateCalendarEventDto dto)
         {
             var ev = await _context.CalendarEvents.FindAsync(id);
             if (ev == null) return NotFound();
-
             ev.Title = dto.Title;
             ev.Description = dto.Description;
             ev.EventDate = dto.EventDate;
             ev.EventType = dto.EventType;
             ev.Location = dto.Location;
-
             await _context.SaveChangesAsync();
             return NoContent();
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
             var ev = await _context.CalendarEvents.FindAsync(id);
             if (ev == null) return NotFound();
-
             _context.CalendarEvents.Remove(ev);
             await _context.SaveChangesAsync();
             return NoContent();
