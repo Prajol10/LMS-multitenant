@@ -787,26 +787,6 @@ export default function Dashboard() {
                       <input type="number" value={infoForm.totalTeachers || ''} onChange={e => setInfoForm({ ...infoForm, totalTeachers: e.target.value })}
                         placeholder="e.g. 50" className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Total Programs</label>
-                      <input type="number" value={infoForm.totalPrograms || ''} onChange={e => setInfoForm({ ...infoForm, totalPrograms: e.target.value })}
-                        placeholder="e.g. 25" className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Total Staff</label>
-                      <input type="number" value={infoForm.totalStaff || ''} onChange={e => setInfoForm({ ...infoForm, totalStaff: e.target.value })}
-                        placeholder="e.g. 30" className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">About</label>
-                    <div data-color-mode="light">
-                      <MDEditor value={infoForm.aboutText} onChange={val => setInfoForm({ ...infoForm, aboutText: val || '' })} preview="edit" height={200} />
-                    </div>
-                  </div>
-                  <ImageUpload label="School Logo" value={infoForm.logoUrl} onChange={v => setInfoForm({ ...infoForm, logoUrl: v })}
-                    hint="Recommended: 200×200px PNG with transparent background." />
-                  {/* Multi-Banner Upload */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Banner Images (up to 5 for slideshow)</label>
                     {(() => {
