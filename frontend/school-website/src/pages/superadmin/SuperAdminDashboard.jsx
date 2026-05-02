@@ -99,7 +99,21 @@ export default function SuperAdminDashboard() {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
-          ...form,
+          schoolName: form.schoolName,
+          subdomain: form.subdomain,
+          primaryColor: form.primaryColor,
+          accentColor: form.accentColor,
+          aboutText: form.aboutText || '',
+          address: form.address || '',
+          phone: form.phone || '',
+          email: form.email || '',
+          logoUrl: form.logoUrl || '',
+          bannerUrl: form.bannerUrl || '',
+          facebookUrl: form.facebookUrl || '',
+          instagramUrl: form.instagramUrl || '',
+          websiteUrl: form.websiteUrl || '',
+          mapEmbedUrl: form.mapEmbedUrl || '',
+          videoUrl: form.videoUrl || '',
           establishedYear: form.establishedYear ? parseInt(form.establishedYear) : null,
           totalStudents: form.totalStudents ? parseInt(form.totalStudents) : null,
           totalTeachers: form.totalTeachers ? parseInt(form.totalTeachers) : null,
@@ -313,10 +327,50 @@ export default function SuperAdminDashboard() {
                 onChange={v => setForm({ ...form, logoUrl: v })}
                 hint="Recommended: 200×200px PNG with transparent background" />
 
-              {/* Banner Upload */}
-              <ImageUpload label="Banner Image" value={form.bannerUrl}
-                onChange={v => setForm({ ...form, bannerUrl: v })}
-                hint="Recommended: 1920×600px JPG. Hero banner on homepage." />
+              {/* Multi-Banner Upload */}
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Banner Images (up to 5 for slideshow)</label>
+                {(() => {
+                  let banners = [];
+                  try { banners = JSON.parse(form.bannerUrl || '[]'); if (!Array.isArray(banners)) banners = form.bannerUrl ? [form.bannerUrl] : []; } catch { banners = form.bannerUrl ? [form.bannerUrl] : []; }
+                  const updateBanners = (nb) => setForm({ ...form, bannerUrl: JSON.stringify(nb) });
+                  return (
+                    <div className="space-y-3">
+                      {banners.map((b, i) => (
+                        <div key={i} className="flex gap-2 items-center">
+                          <div className="flex-1 flex gap-2 items-center bg-gray-50 border border-gray-200 rounded-lg p-2">
+                            {b && <img src={b} alt="banner" className="h-12 w-20 object-cover rounded" />}
+                            <span className="text-xs text-gray-500 truncate flex-1">Banner {i+1}</span>
+                          </div>
+                          <button type="button" onClick={() => updateBanners(banners.filter((_,idx) => idx !== i))}
+                            className="text-red-400 hover:text-red-600 px-2">✕</button>
+                        </div>
+                      ))}
+                      {banners.length < 5 && (
+                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                          <p className="text-xs text-gray-500 mb-2">Add banner {banners.length + 1} of 5</p>
+                          <input type="file" accept="image/*" onChange={e => {
+                            const file = e.target.files[0]; if (!file) return;
+                            const reader = new FileReader();
+                            reader.onloadend = () => updateBanners([...banners, reader.result]);
+                            reader.readAsDataURL(file);
+                          }} className="w-full border border-gray-300 rounded px-2 py-1 text-sm mb-2" />
+                          <div className="flex gap-2">
+                            <input type="text" placeholder="Or paste URL https://..."
+                              id="superadmin-banner-url"
+                              className="flex-1 border border-gray-300 rounded px-2 py-1 text-sm" />
+                            <button type="button" onClick={() => {
+                              const input = document.getElementById('superadmin-banner-url');
+                              if (input.value) { updateBanners([...banners, input.value]); input.value = ''; }
+                            }} className="bg-[#1B2A4A] text-white px-3 py-1 rounded text-sm">Add</button>
+                          </div>
+                        </div>
+                      )}
+                      <p className="text-xs text-gray-400">Recommended: 1920×600px JPG. Images rotate as slideshow.</p>
+                    </div>
+                  );
+                })()}
+              </div>
 
               {/* About with MDEditor */}
               <div className="col-span-2">

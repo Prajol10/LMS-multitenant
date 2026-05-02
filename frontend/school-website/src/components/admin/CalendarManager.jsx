@@ -23,9 +23,13 @@ const CalendarManager = ({ tenantId }) => {
 
   const fetchEvents = async () => {
     try {
-      const res = await fetch(`${API}/CalendarEvent/tenant/${tenantId}`);
+      if (!tenantId) { setLoading(false); return; }
+      const res = await fetch(`${API}/CalendarEvent/tenant/${tenantId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
       if (res.ok) setEvents(await res.json());
-    } catch (e) { console.error(e); }
+      else setMsg('❌ Failed to fetch calendar events');
+    } catch (e) { setMsg('❌ ' + e.message); }
     finally { setLoading(false); }
   };
 

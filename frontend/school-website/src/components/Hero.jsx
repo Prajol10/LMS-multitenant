@@ -9,7 +9,7 @@ const SCHOOL_PHOTOS = [
 ];
 
 const Hero = () => {
-  const { tenant, gallery } = useTenant();
+  const { tenant } = useTenant();
   const [currentPhoto, setCurrentPhoto] = useState(0);
 
   const parseBanners = (bannerUrl) => {
@@ -21,8 +21,7 @@ const Hero = () => {
     return [bannerUrl];
   };
 
-  const photos = parseBanners(tenant?.bannerUrl) ||
-    (gallery && gallery.length > 0 ? gallery.map(g => g.imageUrl) : SCHOOL_PHOTOS);
+  const photos = parseBanners(tenant?.bannerUrl) || SCHOOL_PHOTOS;
 
   useEffect(() => {
     if (photos.length <= 1) return;

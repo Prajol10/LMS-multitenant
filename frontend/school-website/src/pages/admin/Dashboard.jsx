@@ -259,10 +259,14 @@ export default function Dashboard() {
     <div className="flex min-h-screen bg-gray-100">
       <div className="w-64 bg-[#1B2A4A] text-white flex flex-col">
         <div className="p-6 border-b border-[#243660]">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mb-2"
-            style={{ backgroundColor: schoolInfo?.primaryColor || '#C9A84C' }}>
-            {schoolInfo?.schoolName?.[0] || 'S'}
-          </div>
+          {schoolInfo?.logoUrl ? (
+            <img src={schoolInfo.logoUrl} alt="Logo" className="w-10 h-10 rounded-full object-contain border-2 border-white border-opacity-20 mb-2" />
+          ) : (
+            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mb-2"
+              style={{ backgroundColor: schoolInfo?.primaryColor || '#C9A84C' }}>
+              {schoolInfo?.schoolName?.[0] || 'S'}
+            </div>
+          )}
           <h2 className="text-lg font-bold">{schoolInfo?.schoolName || 'School'}</h2>
           <p className="text-blue-300 text-sm">Admin Panel</p>
         </div>
@@ -530,9 +534,29 @@ export default function Dashboard() {
                         placeholder="e.g. 1 year, 2 years" className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                      <input value={programForm.imageUrl} onChange={e => setProgramForm({ ...programForm, imageUrl: e.target.value })}
-                        placeholder="https://..." className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Program Image</label>
+                      <div className="flex gap-2 mb-2">
+                        {['file','url'].map(m => (
+                          <button key={m} type="button" onClick={() => setProgramForm({ ...programForm, imgMode: m })}
+                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${(programForm.imgMode||'url')===m?'bg-[#1B2A4A] text-white':'bg-gray-100 text-gray-700'}`}>
+                            {m==='file'?'Upload Device':'Paste URL'}
+                          </button>
+                        ))}
+                      </div>
+                      {(programForm.imgMode||'url')==='url' ? (
+                        <input value={programForm.imageUrl||''} onChange={e => setProgramForm({ ...programForm, imageUrl: e.target.value })}
+                          placeholder="https://..." className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                      ) : (
+                        <div>
+                          <input type="file" accept="image/*" onChange={e => {
+                            const file = e.target.files[0]; if (!file) return;
+                            const reader = new FileReader();
+                            reader.onloadend = () => setProgramForm({ ...programForm, imageUrl: reader.result });
+                            reader.readAsDataURL(file);
+                          }} className="w-full border border-gray-300 rounded-lg px-3 py-2" />
+                          {programForm.imageUrl && <img src={programForm.imageUrl} alt="Preview" className="mt-2 h-20 object-cover rounded-lg" />}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div>
@@ -781,6 +805,17 @@ export default function Dashboard() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Accent Color</label>
                       <input type="color" value={infoForm.accentColor} onChange={e => setInfoForm({ ...infoForm, accentColor: e.target.value })}
                         className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">About School</label>
+                    <div data-color-mode="light">
+                      <MDEditor
+                        value={infoForm.aboutText || ''}
+                        onChange={val => setInfoForm({ ...infoForm, aboutText: val || '' })}
+                        preview="edit"
+                        height={200}
+                      />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
