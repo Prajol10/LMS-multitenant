@@ -37,6 +37,42 @@ class ApiService {
     return await response.json();
   }
 
+  static async getCalendarEvents(tenantId) {
+    const response = await fetch(`${API_BASE_URL}/CalendarEvent/tenant/${tenantId}`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return await response.json();
+  }
+
+  static async createCalendarEvent(data) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/CalendarEvent`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return await response.json();
+  }
+
+  static async updateCalendarEvent(id, data) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/CalendarEvent/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  static async deleteCalendarEvent(id) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/CalendarEvent/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
   static async submitContact(tenantIdentifier, data) {
     const response = await fetch(`${API_BASE_URL}/school/${tenantIdentifier}/contact`, {
       method: 'POST',
@@ -49,3 +85,8 @@ class ApiService {
 }
 
 export default ApiService;
+
+export const getCalendarEvents = (tenantId) => ApiService.getCalendarEvents(tenantId);
+export const createCalendarEvent = (data) => ApiService.createCalendarEvent(data);
+export const updateCalendarEvent = (id, data) => ApiService.updateCalendarEvent(id, data);
+export const deleteCalendarEvent = (id) => ApiService.deleteCalendarEvent(id);

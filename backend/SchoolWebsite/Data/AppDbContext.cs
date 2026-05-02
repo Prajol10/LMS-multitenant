@@ -5,7 +5,6 @@ namespace SchoolWebsite.Data
     public class AppDbContext : DbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
-
         public DbSet<Tenant> Tenants { get; set; }
         public DbSet<Notice> Notices { get; set; }
         public DbSet<GalleryImage> GalleryImages { get; set; }
@@ -28,6 +27,7 @@ namespace SchoolWebsite.Data
             modelBuilder.Entity<SchoolProgram>().HasOne(p => p.Tenant).WithMany().HasForeignKey(p => p.TenantId).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<Student>().HasOne(s => s.Tenant).WithMany().HasForeignKey(s => s.TenantId).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<LeadershipMessage>().HasOne(m => m.Tenant).WithMany().HasForeignKey(m => m.TenantId).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<CalendarEvent>().HasOne(e => e.Tenant).WithMany().HasForeignKey(e => e.TenantId).OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
