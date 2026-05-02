@@ -1,155 +1,175 @@
 import { useState, useEffect } from 'react';
-import { getCalendarEvents, createCalendarEvent, updateCalendarEvent, deleteCalendarEvent } from '../../services/api';
+
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5071/api';
+
+const eventTypeColors = {
+  Holiday: 'bg-red-100 text-red-700',
+  Exam: 'bg-amber-100 text-amber-700',
+  Meeting: 'bg-blue-100 text-blue-700',
+  Event: 'bg-green-100 text-green-700',
+  General: 'bg-purple-100 text-purple-700',
+};
 
 const CalendarManager = ({ tenantId }) => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
+  const [showForm, setShowForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    eventDate: '',
-    eventType: 'General'
-  });
+  const [form, setForm] = useState({ title: '', description: '', eventDate: '', eventType: 'General', location: '' });
+  const [msg, setMsg] = useState('');
+  const token = localStorage.getItem('token');
 
-  useEffect(() => {
-    if (tenantId) fetchEvents();
-  }, [tenantId]);
+  useEffect(() => { if (tenantId) fetchEvents(); }, [tenantId]);
 
   const fetchEvents = async () => {
     try {
-      const data = await getCalendarEvents(tenantId);
-      setEvents(data);
-    } catch (error) {
-      console.error('Failed to fetch events:', error);
-    } finally {
-      setLoading(false);
-    }
+      const res = await fetch(`${API}/CalendarEvent/tenant/${tenantId}`);
+      if (res.ok) setEvents(await res.json());
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editingEvent) {
-        await updateCalendarEvent(editingEvent.id, { ...formData, tenantId: parseInt(tenantId) });
+      const url = editingEvent ? `${API}/CalendarEvent/${editingEvent.id}` : `${API}/CalendarEvent`;
+      const method = editingEvent ? 'PUT' : 'POST';
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ ...form, tenantId: parseInt(tenantId) })
+      });
+      if (res.ok) {
+        setMsg(editingEvent ? '✅ Event updated!' : '✅ Event created!');
+        setShowForm(false); setEditingEvent(null);
+        setForm({ title: '', description: '', eventDate: '', eventType: 'General', location: '' });
+        fetchEvents();
+        setTimeout(() => setMsg(''), 3000);
       } else {
-        await createCalendarEvent({ ...formData, tenantId: parseInt(tenantId) });
+        const err = await res.text();
+        setMsg('❌ Error: ' + err);
       }
-      setShowModal(false);
-      setEditingEvent(null);
-      setFormData({ title: '', description: '', eventDate: '', eventType: 'General' });
-      fetchEvents();
-    } catch (error) {
-      console.error('Failed to save event:', error);
-    }
-  };
-
-  const handleEdit = (event) => {
-    setEditingEvent(event);
-    setFormData({
-      title: event.title,
-      description: event.description || '',
-      eventDate: event.eventDate.split('T')[0],
-      eventType: event.eventType || 'General'
-    });
-    setShowModal(true);
+    } catch (e) { setMsg('❌ ' + e.message); }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Delete this event?')) {
-      await deleteCalendarEvent(id);
-      fetchEvents();
-    }
+    if (!confirm('Delete this event?')) return;
+    await fetch(`${API}/CalendarEvent/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    fetchEvents();
   };
 
-  const openAddModal = () => {
-    setEditingEvent(null);
-    setFormData({ title: '', description: '', eventDate: '', eventType: 'General' });
-    setShowModal(true);
+  const handleEdit = (ev) => {
+    setEditingEvent(ev);
+    setForm({
+      title: ev.title,
+      description: ev.description || '',
+      eventDate: ev.eventDate.split('T')[0],
+      eventType: ev.eventType || 'General',
+      location: ev.location || ''
+    });
+    setShowForm(true);
   };
 
-  const eventTypeColors = {
-    Holiday: 'bg-red-500', Exam: 'bg-yellow-500', Meeting: 'bg-blue-500',
-    Event: 'bg-green-500', General: 'bg-purple-500'
-  };
-
-  if (loading) return <div className="text-center py-8">Loading...</div>;
+  if (loading) return <div className="text-center py-8 text-gray-500">Loading...</div>;
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Calendar Events</h2>
-        <button onClick={openAddModal} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Event</button>
+        <h1 className="text-2xl font-bold text-[#1B2A4A]">📅 Calendar Events</h1>
+        <button onClick={() => { setShowForm(!showForm); setEditingEvent(null); setForm({ title: '', description: '', eventDate: '', eventType: 'General', location: '' }); }}
+          className="bg-[#1B2A4A] text-white px-4 py-2 rounded-lg hover:bg-[#243660] transition">
+          {showForm ? 'Cancel' : '+ Add Event'}
+        </button>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {events.length === 0 ? (
-              <tr><td colSpan="4" className="px-6 py-4 text-center text-gray-500">No events</td></tr>
-            ) : (
-              events.sort((a, b) => new Date(a.eventDate) - new Date(b.eventDate)).map(event => (
-                <tr key={event.id}>
-                  <td className="px-6 py-4">{event.title}</td>
-                  <td className="px-6 py-4">{new Date(event.eventDate).toLocaleDateString()}</td>
-                  <td className="px-6 py-4">
-                    <span className={`${eventTypeColors[event.eventType] || 'bg-gray-500'} text-white text-xs px-2 py-1 rounded`}>{event.eventType}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <button onClick={() => handleEdit(event)} className="text-blue-600 hover:underline mr-3">Edit</button>
-                    <button onClick={() => handleDelete(event.id)} className="text-red-600 hover:underline">Delete</button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">{editingEvent ? 'Edit Event' : 'Add Event'}</h2>
-            <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Title</label>
-                <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="w-full border rounded p-2" required />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Date</label>
-                <input type="date" value={formData.eventDate} onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })} className="w-full border rounded p-2" required />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Type</label>
-                <select value={formData.eventType} onChange={(e) => setFormData({ ...formData, eventType: e.target.value })} className="w-full border rounded p-2">
-                  <option value="General">General</option>
-                  <option value="Holiday">Holiday</option>
-                  <option value="Exam">Exam</option>
-                  <option value="Meeting">Meeting</option>
-                  <option value="Event">Event</option>
-                </select>
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Description</label>
-                <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="w-full border rounded p-2" rows="3" />
-              </div>
-              <div className="flex justify-end gap-2">
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 bg-gray-200 rounded">Cancel</button>
-                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">{editingEvent ? 'Update' : 'Create'}</button>
-              </div>
-            </form>
-          </div>
+      {msg && (
+        <div className={`mb-4 px-4 py-3 rounded-lg text-sm ${msg.includes('✅') ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+          {msg}
         </div>
       )}
+
+      {showForm && (
+        <div className="bg-white rounded-xl shadow p-6 mb-6">
+          <h2 className="text-lg font-bold text-[#1B2A4A] mb-4">{editingEvent ? 'Edit Event' : 'New Event'}</h2>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                <input value={form.title} onChange={e => setForm({...form, title: e.target.value})}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Date *</label>
+                <input type="date" value={form.eventDate} onChange={e => setForm({...form, eventDate: e.target.value})}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Event Type</label>
+                <select value={form.eventType} onChange={e => setForm({...form, eventType: e.target.value})}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]">
+                  {['General','Holiday','Exam','Meeting','Event'].map(t => <option key={t}>{t}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                <input value={form.location} onChange={e => setForm({...form, location: e.target.value})}
+                  placeholder="e.g. Main Hall" className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})}
+                rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+            </div>
+            <div className="flex gap-3">
+              <button type="submit" className="bg-[#1B2A4A] text-white px-6 py-2 rounded-lg hover:bg-[#243660] transition">
+                {editingEvent ? 'Update Event' : 'Create Event'}
+              </button>
+              <button type="button" onClick={() => { setShowForm(false); setEditingEvent(null); }}
+                className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition">Cancel</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      <div className="bg-white rounded-xl shadow overflow-hidden">
+        {events.length === 0 ? (
+          <div className="p-8 text-center text-gray-400">No events yet — add your first event!</div>
+        ) : (
+          <table className="min-w-full">
+            <thead className="bg-gray-50 border-b border-gray-100">
+              <tr>
+                {['Title','Date','Type','Location','Actions'].map(h => (
+                  <th key={h} className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {events.sort((a,b) => new Date(a.eventDate) - new Date(b.eventDate)).map(ev => (
+                <tr key={ev.id} className="hover:bg-gray-50 transition">
+                  <td className="px-6 py-4 font-medium text-gray-800">{ev.title}</td>
+                  <td className="px-6 py-4 text-gray-600 text-sm">
+                    {new Date(ev.eventDate).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })}
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${eventTypeColors[ev.eventType] || 'bg-gray-100 text-gray-600'}`}>
+                      {ev.eventType}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-gray-500 text-sm">{ev.location || '—'}</td>
+                  <td className="px-6 py-4">
+                    <button onClick={() => handleEdit(ev)} className="text-blue-500 hover:text-blue-700 text-sm mr-3">Edit</button>
+                    <button onClick={() => handleDelete(ev.id)} className="text-red-400 hover:text-red-600 text-sm">Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 };
