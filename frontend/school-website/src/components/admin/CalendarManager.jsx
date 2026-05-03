@@ -30,7 +30,7 @@ const CalendarManager = ({ tenantId }) => {
       const res = await fetch(`${API}/CalendarEvent/tenant/${tenantId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (res.ok) setEvents(await res.json());
+      if (res.ok) { setEvents(await res.json()); setMsg(""); }
       else setMsg('❌ Failed to fetch calendar events');
     } catch (e) { setMsg('❌ ' + e.message); }
     finally { setLoading(false); }
