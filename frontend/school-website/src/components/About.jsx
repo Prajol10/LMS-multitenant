@@ -81,7 +81,7 @@ const About = () => {
               {leadership.map((msg, idx) => (
                 <div key={idx} className="bg-white rounded-2xl shadow-lg overflow-hidden">
                   {msg.imageUrl && (
-                    <img src={msg.imageUrl} alt={msg.name} className="w-full h-64 object-cover object-top" />
+                    <img src={msg.imageUrl} alt={msg.name} className="w-full object-cover" />
                   )}
                   <div className="p-8">
                     <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: tenant.accentColor }}>
