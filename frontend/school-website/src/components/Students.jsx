@@ -9,31 +9,52 @@ const Students = () => {
     <section id="students" className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
+          <p className="text-sm font-semibold uppercase tracking-widest mb-2" style={{ color: tenant.accentColor }}>
+            OUR COMMUNITY
+          </p>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Our Students</h2>
-          <div className="w-20 h-1 mx-auto" style={{ backgroundColor: tenant.accentColor }}></div>
-          <p className="mt-4 text-xl text-gray-600">Meet our talented students</p>
+          <div className="w-20 h-1 mx-auto rounded-full" style={{ backgroundColor: tenant.accentColor }}></div>
+          <p className="mt-4 text-lg text-gray-500">Meet our talented students</p>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {students.map(student => (
-            <div key={student.id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 text-center p-6">
-              {student.imageUrl ? (
-                <img src={student.imageUrl} alt={student.name} className="w-20 h-20 rounded-full object-cover mx-auto mb-4 border-4" style={{ borderColor: tenant.primaryColor + '40' }} />
-              ) : (
-                <div className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold" style={{ backgroundColor: tenant.primaryColor }}>
-                  {student.name.charAt(0)}
-                </div>
-              )}
-              <h3 className="font-bold text-gray-900 text-sm">{student.name}</h3>
-              {student.grade && (
-                <p className="text-xs text-gray-500 mt-1">{student.grade}</p>
-              )}
-              {student.achievement && (
-                <p className="text-xs mt-2 px-2 py-1 rounded-full font-medium" style={{ backgroundColor: tenant.accentColor + '20', color: tenant.accentColor }}>
-                  🏆 {student.achievement}
-                </p>
-              )}
+            <div key={student.id} className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-gray-100">
+              {/* Photo */}
+              <div className="pt-8 px-6 pb-4 flex flex-col items-center">
+                {student.imageUrl ? (
+                  <img src={student.imageUrl} alt={student.name}
+                    className="w-28 h-28 rounded-full object-cover border-4 shadow-md"
+                    style={{ borderColor: tenant.primaryColor + '40' }} />
+                ) : (
+                  <div className="w-28 h-28 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-md"
+                    style={{ backgroundColor: tenant.primaryColor }}>
+                    {student.name.charAt(0)}
+                  </div>
+                )}
+
+                {/* Name */}
+                <h3 className="font-bold text-gray-900 text-base mt-4 text-center">{student.name}</h3>
+
+                {/* Grade */}
+                {student.grade && (
+                  <p className="text-sm text-gray-400 mt-1">{student.grade}</p>
+                )}
+
+                {/* Achievement */}
+                {student.achievement && (
+                  <span className="mt-3 px-3 py-1 rounded-full text-xs font-semibold"
+                    style={{ backgroundColor: tenant.accentColor + '20', color: tenant.accentColor }}>
+                    🏆 {student.achievement}
+                  </span>
+                )}
+              </div>
+
+              {/* Description */}
               {student.about && (
-                <p className="text-xs text-gray-500 mt-2 leading-relaxed">{student.about}</p>
+                <div className="px-5 pb-6 border-t border-gray-50 pt-3">
+                  <p className="text-sm text-gray-500 leading-relaxed text-center">{student.about}</p>
+                </div>
               )}
             </div>
           ))}

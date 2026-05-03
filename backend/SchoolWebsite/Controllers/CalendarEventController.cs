@@ -24,23 +24,14 @@ namespace SchoolWebsite.Controllers
                 Title = dto.Title,
                 Description = dto.Description,
                 EventDate = dto.EventDate,
+                EventEndDate = dto.EventEndDate,
                 EventType = dto.EventType,
                 Location = dto.Location,
                 CreatedAt = DateTime.UtcNow
             };
             _context.CalendarEvents.Add(ev);
             await _context.SaveChangesAsync();
-            return Ok(new CalendarEventDto
-            {
-                Id = ev.Id,
-                TenantId = ev.TenantId,
-                Title = ev.Title,
-                Description = ev.Description,
-                EventDate = ev.EventDate,
-                EventType = ev.EventType,
-                Location = ev.Location,
-                CreatedAt = ev.CreatedAt
-            });
+            return Ok(MapToDto(ev));
         }
 
         [HttpGet("tenant/{tenantId}")]
@@ -50,17 +41,7 @@ namespace SchoolWebsite.Controllers
                 .Where(e => e.TenantId == tenantId)
                 .OrderBy(e => e.EventDate)
                 .ToListAsync();
-            return Ok(events.Select(e => new CalendarEventDto
-            {
-                Id = e.Id,
-                TenantId = e.TenantId,
-                Title = e.Title,
-                Description = e.Description,
-                EventDate = e.EventDate,
-                EventType = e.EventType,
-                Location = e.Location,
-                CreatedAt = e.CreatedAt
-            }).ToList());
+            return Ok(events.Select(MapToDto).ToList());
         }
 
         [HttpPut("{id}")]
@@ -72,6 +53,7 @@ namespace SchoolWebsite.Controllers
             ev.Title = dto.Title;
             ev.Description = dto.Description;
             ev.EventDate = dto.EventDate;
+            ev.EventEndDate = dto.EventEndDate;
             ev.EventType = dto.EventType;
             ev.Location = dto.Location;
             await _context.SaveChangesAsync();
@@ -88,5 +70,18 @@ namespace SchoolWebsite.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+
+        private static CalendarEventDto MapToDto(CalendarEvent e) => new()
+        {
+            Id = e.Id,
+            TenantId = e.TenantId,
+            Title = e.Title,
+            Description = e.Description,
+            EventDate = e.EventDate,
+            EventEndDate = e.EventEndDate,
+            EventType = e.EventType,
+            Location = e.Location,
+            CreatedAt = e.CreatedAt
+        };
     }
 }

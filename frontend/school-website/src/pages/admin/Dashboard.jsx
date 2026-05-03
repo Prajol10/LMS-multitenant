@@ -754,8 +754,8 @@ export default function Dashboard() {
         )}
 
         {/* CALENDAR */}
-        {activeTab === 'calendar' && (
-          <CalendarManager tenantId={schoolInfo?.id} />
+        {activeTab === 'calendar' && schoolInfo && (
+          <CalendarManager tenantId={schoolInfo.id} />
         )}
 
         {/* SCHOOL INFO */}

@@ -123,7 +123,7 @@ namespace SchoolWebsite.Controllers
             var students = await _context.Students
                 .Where(s => s.TenantId == tenant.Id && s.IsActive)
                 .OrderBy(s => s.Grade).ThenBy(s => s.Name)
-                .Select(s => new { s.Id, s.Name, s.Grade, s.Achievement, s.ImageUrl, s.CreatedAt })
+                .Select(s => new { s.Id, s.Name, s.Grade, s.Achievement, s.About, s.ImageUrl, s.CreatedAt })
                 .ToListAsync();
             return Ok(students);
         }
