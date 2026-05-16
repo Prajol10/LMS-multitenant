@@ -67,7 +67,7 @@ namespace SchoolWebsite.Controllers
         {
             var tenantId = GetTenantId();
             if (tenantId == null) return Unauthorized();
-            var messages = await _context.ContactMessages.Where(m => m.TenantId == tenantId).OrderByDescending(m => m.CreatedAt).ToListAsync();
+            var messages = await _context.ContactMessages.Where(m => m.TenantId == tenantId && !m.IsRead == m.IsRead).OrderByDescending(m => m.CreatedAt).ToListAsync();
             return Ok(messages);
         }
 
@@ -100,7 +100,7 @@ namespace SchoolWebsite.Controllers
         {
             var tenantId = GetTenantId();
             if (tenantId == null) return Unauthorized();
-            var programs = await _context.SchoolPrograms.Where(p => p.TenantId == tenantId).OrderByDescending(p => p.CreatedAt).ToListAsync();
+            var programs = await _context.SchoolPrograms.Where(p => p.TenantId == tenantId && !p.IsArchived).OrderByDescending(p => p.CreatedAt).ToListAsync();
             return Ok(programs);
         }
 
@@ -148,7 +148,7 @@ namespace SchoolWebsite.Controllers
         {
             var tenantId = GetTenantId();
             if (tenantId == null) return Unauthorized();
-            var msgs = await _context.LeadershipMessages.Where(m => m.TenantId == tenantId).OrderBy(m => m.SortOrder).ToListAsync();
+            var msgs = await _context.LeadershipMessages.Where(m => m.TenantId == tenantId && !m.IsArchived).OrderBy(m => m.SortOrder).ToListAsync();
             return Ok(msgs);
         }
 
@@ -196,7 +196,7 @@ namespace SchoolWebsite.Controllers
         {
             var tenantId = GetTenantId();
             if (tenantId == null) return Unauthorized();
-            var students = await _context.Students.Where(s => s.TenantId == tenantId).OrderBy(s => s.Grade).ThenBy(s => s.Name).ToListAsync();
+            var students = await _context.Students.Where(s => s.TenantId == tenantId && !s.IsArchived).OrderBy(s => s.Grade).ThenBy(s => s.Name).ToListAsync();
             return Ok(students);
         }
 
@@ -239,6 +239,102 @@ namespace SchoolWebsite.Controllers
             return NoContent();
         }
 
+
+        // ─── ARCHIVE ────────────────────────────────────────────────────
+
+        [HttpGet("archive")] [Authorize]
+        public async Task<ActionResult> GetArchive()
+        {
+            var tenantId = GetTenantId();
+            if (tenantId == null) return Unauthorized();
+
+            var notices = await _context.Notices.Where(n => n.TenantId == tenantId && n.IsArchived).OrderByDescending(n => n.ArchivedAt).Select(n => new { type = "notice", n.Id, title = n.Title, description = n.Content, n.ArchivedAt, n.CreatedAt }).ToListAsync();
+            var gallery = await _context.GalleryImages.Where(g => g.TenantId == tenantId && g.IsArchived).OrderByDescending(g => g.ArchivedAt).Select(g => new { type = "gallery", g.Id, title = g.Caption ?? "Gallery Image", description = g.ImageUrl, g.ArchivedAt, g.CreatedAt }).ToListAsync();
+            var programs = await _context.SchoolPrograms.Where(p => p.TenantId == tenantId && p.IsArchived).OrderByDescending(p => p.ArchivedAt).Select(p => new { type = "program", p.Id, title = p.Title, description = p.Description, p.ArchivedAt, p.CreatedAt }).ToListAsync();
+            var students = await _context.Students.Where(s => s.TenantId == tenantId && s.IsArchived).OrderByDescending(s => s.ArchivedAt).Select(s => new { type = "student", s.Id, title = s.Name, description = s.Grade, s.ArchivedAt, s.CreatedAt }).ToListAsync();
+            var leadership = await _context.LeadershipMessages.Where(l => l.TenantId == tenantId && l.IsArchived).OrderByDescending(l => l.ArchivedAt).Select(l => new { type = "leadership", l.Id, title = l.Name, description = l.Title, l.ArchivedAt, l.CreatedAt }).ToListAsync();
+            var calendar = await _context.CalendarEvents.Where(c => c.TenantId == tenantId && c.IsArchived).OrderByDescending(c => c.ArchivedAt).Select(c => new { type = "calendar", c.Id, title = c.Title, description = c.Description, c.ArchivedAt, c.CreatedAt }).ToListAsync();
+
+            var all = notices.Cast<object>().Concat(gallery).Concat(programs).Concat(students).Concat(leadership).Concat(calendar).OrderByDescending(x => ((dynamic)x).ArchivedAt).ToList();
+            return Ok(all);
+        }
+
+        [HttpPut("archive/{type}/{id}")] [Authorize]
+        public async Task<IActionResult> ArchiveItem(string type, int id)
+        {
+            var tenantId = GetTenantId();
+            if (tenantId == null) return Unauthorized();
+            var now = DateTime.UtcNow;
+
+            switch (type.ToLower())
+            {
+                case "notice":
+                    var notice = await _context.Notices.FirstOrDefaultAsync(n => n.Id == id && n.TenantId == tenantId);
+                    if (notice == null) return NotFound();
+                    notice.IsArchived = true; notice.ArchivedAt = now; break;
+                case "gallery":
+                    var gallery = await _context.GalleryImages.FirstOrDefaultAsync(g => g.Id == id && g.TenantId == tenantId);
+                    if (gallery == null) return NotFound();
+                    gallery.IsArchived = true; gallery.ArchivedAt = now; break;
+                case "program":
+                    var program = await _context.SchoolPrograms.FirstOrDefaultAsync(p => p.Id == id && p.TenantId == tenantId);
+                    if (program == null) return NotFound();
+                    program.IsArchived = true; program.ArchivedAt = now; break;
+                case "student":
+                    var student = await _context.Students.FirstOrDefaultAsync(s => s.Id == id && s.TenantId == tenantId);
+                    if (student == null) return NotFound();
+                    student.IsArchived = true; student.ArchivedAt = now; break;
+                case "leadership":
+                    var leadership = await _context.LeadershipMessages.FirstOrDefaultAsync(l => l.Id == id && l.TenantId == tenantId);
+                    if (leadership == null) return NotFound();
+                    leadership.IsArchived = true; leadership.ArchivedAt = now; break;
+                case "calendar":
+                    var calendar = await _context.CalendarEvents.FirstOrDefaultAsync(c => c.Id == id && c.TenantId == tenantId);
+                    if (calendar == null) return NotFound();
+                    calendar.IsArchived = true; calendar.ArchivedAt = now; break;
+                default: return BadRequest("Unknown type");
+            }
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpPut("restore/{type}/{id}")] [Authorize]
+        public async Task<IActionResult> RestoreItem(string type, int id)
+        {
+            var tenantId = GetTenantId();
+            if (tenantId == null) return Unauthorized();
+
+            switch (type.ToLower())
+            {
+                case "notice":
+                    var notice = await _context.Notices.FirstOrDefaultAsync(n => n.Id == id && n.TenantId == tenantId);
+                    if (notice == null) return NotFound();
+                    notice.IsArchived = false; notice.ArchivedAt = null; break;
+                case "gallery":
+                    var gallery = await _context.GalleryImages.FirstOrDefaultAsync(g => g.Id == id && g.TenantId == tenantId);
+                    if (gallery == null) return NotFound();
+                    gallery.IsArchived = false; gallery.ArchivedAt = null; break;
+                case "program":
+                    var program = await _context.SchoolPrograms.FirstOrDefaultAsync(p => p.Id == id && p.TenantId == tenantId);
+                    if (program == null) return NotFound();
+                    program.IsArchived = false; program.ArchivedAt = null; break;
+                case "student":
+                    var student = await _context.Students.FirstOrDefaultAsync(s => s.Id == id && s.TenantId == tenantId);
+                    if (student == null) return NotFound();
+                    student.IsArchived = false; student.ArchivedAt = null; break;
+                case "leadership":
+                    var leadership = await _context.LeadershipMessages.FirstOrDefaultAsync(l => l.Id == id && l.TenantId == tenantId);
+                    if (leadership == null) return NotFound();
+                    leadership.IsArchived = false; leadership.ArchivedAt = null; break;
+                case "calendar":
+                    var calendar = await _context.CalendarEvents.FirstOrDefaultAsync(c => c.Id == id && c.TenantId == tenantId);
+                    if (calendar == null) return NotFound();
+                    calendar.IsArchived = false; calendar.ArchivedAt = null; break;
+                default: return BadRequest("Unknown type");
+            }
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
         private static TenantDto MapToDto(Tenant t) => new()
         {
             Id = t.Id, SchoolName = t.SchoolName, Subdomain = t.Subdomain,

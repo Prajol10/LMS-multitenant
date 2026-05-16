@@ -61,7 +61,7 @@ namespace SchoolWebsite.Controllers
             if (tenant == null) return NotFound("School not found");
 
             var notices = await _context.Notices
-                .Where(n => n.TenantId == tenant.Id)
+                .Where(n => n.TenantId == tenant.Id && !n.IsArchived)
                 .OrderByDescending(n => n.CreatedAt)
                 .Select(n => new { n.Id, n.Title, n.Content, n.IsImportant, n.CreatedAt })
                 .ToListAsync();
@@ -91,7 +91,7 @@ namespace SchoolWebsite.Controllers
             if (tenant == null) return NotFound("School not found");
 
             var gallery = await _context.GalleryImages
-                .Where(g => g.TenantId == tenant.Id)
+                .Where(g => g.TenantId == tenant.Id && !g.IsArchived)
                 .OrderByDescending(g => g.CreatedAt)
                 .Select(g => new { g.Id, g.ImageUrl, g.Caption, g.CreatedAt })
                 .ToListAsync();
@@ -106,7 +106,7 @@ namespace SchoolWebsite.Controllers
             if (tenant == null) return NotFound("School not found");
 
             var programs = await _context.SchoolPrograms
-                .Where(p => p.TenantId == tenant.Id && p.IsActive)
+                .Where(p => p.TenantId == tenant.Id && p.IsActive && !p.IsArchived)
                 .OrderByDescending(p => p.CreatedAt)
                 .Select(p => new { p.Id, p.Title, p.Description, p.Duration, p.Level, p.ImageUrl, p.CreatedAt })
                 .ToListAsync();
@@ -121,7 +121,7 @@ namespace SchoolWebsite.Controllers
             if (tenant == null) return NotFound("School not found");
 
             var students = await _context.Students
-                .Where(s => s.TenantId == tenant.Id && s.IsActive)
+                .Where(s => s.TenantId == tenant.Id && s.IsActive && !s.IsArchived)
                 .OrderBy(s => s.Grade).ThenBy(s => s.Name)
                 .Select(s => new { s.Id, s.Name, s.Grade, s.Achievement, s.About, s.ImageUrl, s.CreatedAt })
                 .ToListAsync();
@@ -136,7 +136,7 @@ namespace SchoolWebsite.Controllers
             if (tenant == null) return NotFound("School not found");
 
             var messages = await _context.LeadershipMessages
-                .Where(m => m.TenantId == tenant.Id && m.IsActive)
+                .Where(m => m.TenantId == tenant.Id && m.IsActive && !m.IsArchived)
                 .OrderBy(m => m.SortOrder)
                 .ThenBy(m => m.CreatedAt)
                 .Select(m => new { m.Id, m.Name, m.Title, m.Content, m.ImageUrl, m.SortOrder })

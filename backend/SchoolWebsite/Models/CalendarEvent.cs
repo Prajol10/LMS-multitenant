@@ -18,6 +18,8 @@ namespace SchoolWebsite.Models
         public string? EventType { get; set; }
         [MaxLength(200)]
         public string? Location { get; set; }
+        public bool IsArchived { get; set; } = false;
+        public DateTime? ArchivedAt { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
