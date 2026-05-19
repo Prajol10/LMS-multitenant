@@ -59,6 +59,7 @@ export default function Dashboard() {
   const [programs, setPrograms] = useState([]);
   const [students, setStudents] = useState([]);
   const [leadership, setLeadership] = useState([]);
+  const [archive, setArchive] = useState([]);
   const [showLeadershipForm, setShowLeadershipForm] = useState(false);
   const [editingLeadership, setEditingLeadership] = useState(null);
   const [leadershipForm, setLeadershipForm] = useState({ name: '', title: '', content: '', imageUrl: '', sortOrder: 0 });
@@ -113,6 +114,8 @@ export default function Dashboard() {
       if (studentsRes.ok) setStudents(await studentsRes.json());
       const lRes = await fetch(`${API}/admin/leadership`, { headers: { Authorization: `Bearer ${token}` } });
       if (lRes.ok) setLeadership(await lRes.json());
+      const archRes = await fetch(`${API}/admin/archive`, { headers: { Authorization: `Bearer ${token}` } });
+      if (archRes.ok) setArchive(await archRes.json());
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
@@ -236,6 +239,21 @@ export default function Dashboard() {
     fetchData();
   };
 
+  const archiveItem = async (type, id) => {
+    if (!confirm('Archive this item? It will be hidden from the public site.')) return;
+    const res = await fetch(`${API}/admin/archive/${type}/${id}`, {
+      method: 'PUT', headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) { showMsg('✅ Item archived!'); fetchData(); }
+  };
+
+  const restoreItem = async (type, id) => {
+    const res = await fetch(`${API}/admin/restore/${type}/${id}`, {
+      method: 'PUT', headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) { showMsg('✅ Item restored!'); fetchData(); }
+  };
+
   const logout = () => { localStorage.clear(); navigate(`/${storedSchool}/admin`); };
 
   const tabs = [
@@ -247,6 +265,7 @@ export default function Dashboard() {
     { id: 'students', label: 'Students' },
     { id: 'messages', label: 'Messages', badge: messages.filter(m => !m.isRead).length },
     { id: 'info', label: 'School Info' },
+    { id: 'archive', label: '🗄️ Archive', badge: archive.length },
   ];
 
   if (loading) return (
@@ -336,7 +355,8 @@ export default function Dashboard() {
                       <p className="text-gray-600 text-sm">{notice.content}</p>
                       <p className="text-gray-400 text-xs mt-2">{new Date(notice.createdAt).toLocaleDateString()}</p>
                     </div>
-                    <button onClick={() => deleteNotice(notice.id)} className="text-red-400 hover:text-red-600 text-sm ml-4">Delete</button>
+                    <button onClick={() => archiveItem('notice', notice.id)} className="text-yellow-500 hover:text-yellow-700 text-sm ml-2">Archive</button>
+                    <button onClick={() => deleteNotice(notice.id)} className="text-red-400 hover:text-red-600 text-sm ml-2">Delete</button>
                   </div>
                 </div>
               ))}
@@ -395,7 +415,8 @@ export default function Dashboard() {
                   <img src={img.imageUrl} alt={img.caption} className="w-full h-48 object-cover" />
                   <div className="p-3 flex justify-between items-center">
                     <p className="text-sm text-gray-600 truncate">{img.caption}</p>
-                    <button onClick={() => deleteGalleryImage(img.id)} className="text-red-400 hover:text-red-600 text-sm ml-2">Delete</button>
+                    <button onClick={() => archiveItem('gallery', img.id)} className="text-yellow-500 hover:text-yellow-700 text-sm ml-1">Archive</button>
+                    <button onClick={() => deleteGalleryImage(img.id)} className="text-red-400 hover:text-red-600 text-sm ml-1">Delete</button>
                   </div>
                 </div>
               ))}
@@ -491,6 +512,7 @@ export default function Dashboard() {
                     <div className="flex gap-2 mt-3">
                       <button onClick={() => { setEditingLeadership(msg); setLeadershipForm({ name: msg.name, title: msg.title || '', content: msg.content || '', imageUrl: msg.imageUrl || '', sortOrder: msg.sortOrder || 0 }); setShowLeadershipForm(true); }}
                         className="text-blue-400 hover:text-blue-600 text-sm">Edit</button>
+                      <button onClick={() => archiveItem('leadership', msg.id)} className="text-yellow-500 hover:text-yellow-700 text-sm">Archive</button>
                       <button onClick={() => deleteLeadership(msg.id)} className="text-red-400 hover:text-red-600 text-sm">Delete</button>
                     </div>
                   </div>
@@ -593,6 +615,7 @@ export default function Dashboard() {
                       <div className="flex flex-col gap-1 ml-2">
                         <button onClick={() => { setEditingProgram(p); setProgramForm({ title: p.title, description: p.description || '', duration: p.duration || '', level: p.level || '', imageUrl: p.imageUrl || '' }); setShowProgramForm(true); }}
                           className="text-blue-400 hover:text-blue-600 text-sm">Edit</button>
+                        <button onClick={() => archiveItem('program', p.id)} className="text-yellow-500 hover:text-yellow-700 text-sm">Archive</button>
                         <button onClick={() => deleteProgram(p.id)} className="text-red-400 hover:text-red-600 text-sm">Delete</button>
                       </div>
                     </div>
@@ -756,6 +779,42 @@ export default function Dashboard() {
         {/* CALENDAR */}
         {activeTab === 'calendar' && schoolInfo && (
           <CalendarManager tenantId={schoolInfo.id} />
+        )}
+
+        {/* ARCHIVE */}
+        {activeTab === 'archive' && (
+          <div>
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl font-bold text-[#1B2A4A]">🗄️ Archive</h1>
+              <p className="text-sm text-gray-500">{archive.length} archived items</p>
+            </div>
+            {archive.length === 0 ? (
+              <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">
+                <p className="text-4xl mb-3">🗄️</p>
+                <p className="font-medium">No archived items yet</p>
+                <p className="text-sm mt-1">Click Archive on any notice, gallery image, program, student or leadership message to archive it</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {archive.map((item, idx) => (
+                  <div key={idx} className="bg-white rounded-xl shadow p-4 flex items-center justify-between border-l-4 border-yellow-400">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded-full font-medium capitalize">{item.type}</span>
+                        <h3 className="font-medium text-gray-800">{item.title}</h3>
+                      </div>
+                      {item.description && <p className="text-gray-500 text-sm truncate max-w-md">{item.description}</p>}
+                      <p className="text-gray-400 text-xs mt-1">Archived: {new Date(item.archivedAt).toLocaleDateString()}</p>
+                    </div>
+                    <button onClick={() => restoreItem(item.type, item.id)}
+                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm transition ml-4">
+                      Restore
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
         {/* SCHOOL INFO */}
