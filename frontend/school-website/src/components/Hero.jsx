@@ -99,11 +99,11 @@ const Hero = () => {
               <p className="text-sm opacity-75">Established</p>
             </div>
             <div className="text-center border-x border-white border-opacity-30">
-              <p className="text-3xl font-bold">{tenant.totalStudents ? tenant.totalStudents + '+' : '500+'}</p>
+              <p className="text-3xl font-bold">{tenant.TotalStudents ? tenant.TotalStudents + '+' : '500+'}</p>
               <p className="text-sm opacity-75">Students</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl font-bold">{tenant.totalPrograms ? tenant.totalPrograms + '+' : '25+'}</p>
+              <p className="text-3xl font-bold">{tenant.TotalPrograms ? tenant.TotalPrograms + '+' : '25+'}</p>
               <p className="text-sm opacity-75">Programs</p>
             </div>
           </div>
