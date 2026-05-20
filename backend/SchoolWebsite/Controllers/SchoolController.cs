@@ -193,13 +193,24 @@ namespace SchoolWebsite.Controllers
                 SchoolName = createTenantDto.SchoolName,
                 Subdomain = createTenantDto.Subdomain.ToLower(),
                 LogoUrl = createTenantDto.LogoUrl,
+                BannerUrl = createTenantDto.BannerUrl,
                 PrimaryColor = createTenantDto.PrimaryColor,
                 AccentColor = createTenantDto.AccentColor,
                 AboutText = createTenantDto.AboutText,
                 Address = createTenantDto.Address,
                 Phone = createTenantDto.Phone,
                 Email = createTenantDto.Email,
-                EstablishedYear = createTenantDto.EstablishedYear
+                EstablishedYear = createTenantDto.EstablishedYear,
+                FacebookUrl = createTenantDto.FacebookUrl,
+                InstagramUrl = createTenantDto.InstagramUrl,
+                WebsiteUrl = createTenantDto.WebsiteUrl,
+                MapEmbedUrl = createTenantDto.MapEmbedUrl,
+                VideoUrl = createTenantDto.VideoUrl,
+                AboutImageUrl = createTenantDto.AboutImageUrl,
+                TotalStudents = createTenantDto.TotalStudents,
+                TotalTeachers = createTenantDto.TotalTeachers,
+                TotalPrograms = createTenantDto.TotalPrograms,
+                TotalStaff = createTenantDto.TotalStaff
             };
             _context.Tenants.Add(tenant);
             await _context.SaveChangesAsync();

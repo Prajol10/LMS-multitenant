@@ -93,7 +93,7 @@ export default function SuperAdminDashboard() {
     setMessage('');
     try {
       const isEditing = !!editingSchool;
-      const url = isEditing ? `${API}/superadmin/schools/${editingSchool.id}` : `${API}/school`;
+      const url = isEditing ? `${API}/superadmin/schools/${editingSchool.id}` : `${API}/superadmin/schools`;
       const method = isEditing ? 'PUT' : 'POST';
       const res = await fetch(url, {
         method,
