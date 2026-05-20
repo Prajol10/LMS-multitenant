@@ -98,6 +98,8 @@ export default function Dashboard() {
         mapEmbedUrl: s.mapEmbedUrl || '', videoUrl: s.videoUrl || '',
         aboutImageUrl: s.aboutImageUrl || '', primaryColor: s.primaryColor || '#1B2A4A',
         accentColor: s.accentColor || '#C9A84C',
+        totalStudents: s.totalStudents || '', totalTeachers: s.totalTeachers || '',
+        totalPrograms: s.totalPrograms || '', totalStaff: s.totalStaff || '',
       });
       const [noticesRes, galleryRes, messagesRes, programsRes, studentsRes] = await Promise.all([
         fetch(`${API}/school/${s.subdomain}/notices`),

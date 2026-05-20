@@ -49,6 +49,8 @@ namespace SchoolWebsite.Controllers
                 MapEmbedUrl = tenant.MapEmbedUrl, VideoUrl = tenant.VideoUrl,
                 AboutImageUrl = tenant.AboutImageUrl, FacebookUrl = tenant.FacebookUrl,
                 InstagramUrl = tenant.InstagramUrl, WebsiteUrl = tenant.WebsiteUrl,
+                TotalStudents = tenant.TotalStudents, TotalTeachers = tenant.TotalTeachers,
+                TotalPrograms = tenant.TotalPrograms, TotalStaff = tenant.TotalStaff,
                 IsActive = tenant.IsActive, CreatedAt = tenant.CreatedAt
             });
         }

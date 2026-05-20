@@ -232,7 +232,11 @@ export default function SuperAdminDashboard() {
               {/* Basic Info */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">School Name *</label>
-                <input value={form.schoolName} onChange={e => setForm({ ...form, schoolName: e.target.value })}
+                <input value={form.schoolName} onChange={e => {
+                  const name = e.target.value;
+                  const autoSubdomain = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+                  setForm({ ...form, schoolName: name, subdomain: editingSchool ? form.subdomain : autoSubdomain });
+                }}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" required />
               </div>
               <div>
@@ -240,7 +244,8 @@ export default function SuperAdminDashboard() {
                 <input value={form.subdomain}
                   onChange={e => !editingSchool && setForm({ ...form, subdomain: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '') })}
                   className={`w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A] ${editingSchool ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                  placeholder="e.g. ratobangala" required readOnly={!!editingSchool} />
+                  placeholder="Auto-filled from school name" required readOnly={!!editingSchool} />
+                {!editingSchool && <p className="text-xs text-gray-400 mt-1">Auto-filled from school name — you can edit it</p>}
               </div>
 
               {/* Colors */}
