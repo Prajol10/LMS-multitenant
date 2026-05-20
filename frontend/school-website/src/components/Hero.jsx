@@ -93,17 +93,21 @@ const Hero = () => {
               Contact Us
             </button>
           </div>
-          <div className="grid grid-cols-3 gap-6 mt-16 max-w-lg mx-auto">
+          <div className="grid grid-cols-4 gap-6 mt-16 max-w-2xl mx-auto">
             <div className="text-center">
               <p className="text-3xl font-bold">{tenant.establishedYear || 'N/A'}</p>
               <p className="text-sm opacity-75">Established</p>
             </div>
             <div className="text-center border-x border-white border-opacity-30">
-              <p className="text-3xl font-bold">{tenant.TotalStudents ? tenant.TotalStudents + '+' : '500+'}</p>
+              <p className="text-3xl font-bold">{tenant.totalStudents ? tenant.totalStudents + '+' : ''}</p>
               <p className="text-sm opacity-75">Students</p>
             </div>
+            <div className="text-center border-r border-white border-opacity-30">
+              <p className="text-3xl font-bold">{tenant.totalTeachers ? tenant.totalTeachers + '+' : ''}</p>
+              <p className="text-sm opacity-75">Teachers</p>
+            </div>
             <div className="text-center">
-              <p className="text-3xl font-bold">{tenant.TotalPrograms ? tenant.TotalPrograms + '+' : '25+'}</p>
+              <p className="text-3xl font-bold">{tenant.totalPrograms ? tenant.totalPrograms + '+' : ''}</p>
               <p className="text-sm opacity-75">Programs</p>
             </div>
           </div>
@@ -111,7 +115,7 @@ const Hero = () => {
       </div>
 
       {photos.length > 1 && (
-        <div className="absolute bottom-16 left-0 right-0 flex justify-center gap-2 z-20">
+        <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-20">
           {photos.map((_, idx) => (
             <button key={idx} onClick={() => setCurrentPhoto(idx)}
               className="h-2 rounded-full transition-all duration-300 bg-white"
