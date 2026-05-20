@@ -44,7 +44,8 @@ const CalendarManager = ({ tenantId }) => {
       const body = {
         ...form,
         tenantId: parseInt(tenantId),
-        eventEndDate: form.eventEndDate || null
+        eventDate: form.eventDate ? form.eventDate + 'T00:00:00' : null,
+        eventEndDate: form.eventEndDate ? form.eventEndDate + 'T00:00:00' : null
       };
       const res = await fetch(url, {
         method,
