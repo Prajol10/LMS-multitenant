@@ -23,8 +23,8 @@ namespace SchoolWebsite.Controllers
                 TenantId = dto.TenantId,
                 Title = dto.Title,
                 Description = dto.Description,
-                EventDate = dto.EventDate,
-                EventEndDate = dto.EventEndDate,
+                EventDate = DateTime.SpecifyKind(dto.EventDate, DateTimeKind.Utc),
+                EventEndDate = dto.EventEndDate.HasValue ? DateTime.SpecifyKind(dto.EventEndDate.Value, DateTimeKind.Utc) : null,
                 EventType = dto.EventType,
                 Location = dto.Location,
                 CreatedAt = DateTime.UtcNow
@@ -52,8 +52,8 @@ namespace SchoolWebsite.Controllers
             if (ev == null) return NotFound();
             ev.Title = dto.Title;
             ev.Description = dto.Description;
-            ev.EventDate = dto.EventDate;
-            ev.EventEndDate = dto.EventEndDate;
+            ev.EventDate = DateTime.SpecifyKind(dto.EventDate, DateTimeKind.Utc);
+            ev.EventEndDate = dto.EventEndDate.HasValue ? DateTime.SpecifyKind(dto.EventEndDate.Value, DateTimeKind.Utc) : null;
             ev.EventType = dto.EventType;
             ev.Location = dto.Location;
             await _context.SaveChangesAsync();
