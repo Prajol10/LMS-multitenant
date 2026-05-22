@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { uploadImage } from '../../utils/uploadImage';
 import { useNavigate } from 'react-router-dom';
 import MDEditor from '@uiw/react-md-editor';
 
@@ -25,9 +26,10 @@ const ImageUpload = ({ label, value, onChange, hint }) => {
         <div>
           <input type="file" accept="image/*" onChange={e => {
             const file = e.target.files[0]; if (!file) return;
-            const reader = new FileReader();
-            reader.onloadend = () => onChange(reader.result);
-            reader.readAsDataURL(file);
+            try {
+              const url = await uploadImage(file, form.subdomain || 'school', 'logos');
+              onChange(url);
+            } catch (e) { alert('Upload failed: ' + e.message); }
           }} className="w-full border border-gray-300 rounded-lg px-3 py-2" />
           {value && (
             <img src={value} alt="Preview" className="mt-2 h-24 object-contain rounded-lg border border-gray-200 p-1 bg-gray-50" />
@@ -356,9 +358,10 @@ export default function SuperAdminDashboard() {
                           <p className="text-xs text-gray-500 mb-2">Add banner {banners.length + 1} of 5</p>
                           <input type="file" accept="image/*" onChange={e => {
                             const file = e.target.files[0]; if (!file) return;
-                            const reader = new FileReader();
-                            reader.onloadend = () => updateBanners([...banners, reader.result]);
-                            reader.readAsDataURL(file);
+                            try {
+                              const url = await uploadImage(file, form.subdomain || 'school', 'banners');
+                              updateBanners([...banners, url]);
+                            } catch (e) { alert('Upload failed: ' + e.message); }
                           }} className="w-full border border-gray-300 rounded px-2 py-1 text-sm mb-2" />
                           <div className="flex gap-2">
                             <input type="text" placeholder="Or paste URL https://..."

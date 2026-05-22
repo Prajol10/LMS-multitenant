@@ -1,5 +1,6 @@
 import CalendarManager from '../../components/admin/CalendarManager';
 import { useState, useEffect } from 'react';
+import { uploadImage } from '../../utils/uploadImage';
 import MDEditor from '@uiw/react-md-editor';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -393,9 +394,10 @@ export default function Dashboard() {
                     <div>
                       <input type="file" accept="image/*" onChange={e => {
                         const file = e.target.files[0]; if (!file) return;
-                        const reader = new FileReader();
-                        reader.onloadend = () => setGalleryForm({ ...galleryForm, imageUrl: reader.result });
-                        reader.readAsDataURL(file);
+                        try {
+                          const url = await uploadImage(file, schoolInfo?.subdomain || 'school', 'gallery');
+                          setGalleryForm({ ...galleryForm, imageUrl: url });
+                        } catch (e) { alert('Upload failed: ' + e.message); }
                       }} className="w-full border border-gray-300 rounded-lg px-3 py-2" />
                       {galleryForm.imageUrl?.startsWith('data:') && <img src={galleryForm.imageUrl} alt="Preview" className="mt-2 h-32 object-cover rounded-lg" />}
                     </div>
@@ -468,9 +470,10 @@ export default function Dashboard() {
                         <div>
                           <input type="file" accept="image/*" onChange={e => {
                             const file = e.target.files[0]; if (!file) return;
-                            const reader = new FileReader();
-                            reader.onloadend = () => setLeadershipForm({ ...leadershipForm, imageUrl: reader.result });
-                            reader.readAsDataURL(file);
+                            try {
+                              const url = await uploadImage(file, schoolInfo?.subdomain || 'school', 'leadership');
+                              setLeadershipForm({ ...leadershipForm, imageUrl: url });
+                            } catch (e) { alert('Upload failed: ' + e.message); }
                           }} className="w-full border border-gray-300 rounded-lg px-3 py-2" />
                           {leadershipForm.imageUrl && (
                             <img src={leadershipForm.imageUrl} alt="Preview" className="mt-2 h-24 w-24 object-cover rounded-lg border border-gray-200" />
@@ -574,9 +577,10 @@ export default function Dashboard() {
                         <div>
                           <input type="file" accept="image/*" onChange={e => {
                             const file = e.target.files[0]; if (!file) return;
-                            const reader = new FileReader();
-                            reader.onloadend = () => setProgramForm({ ...programForm, imageUrl: reader.result });
-                            reader.readAsDataURL(file);
+                            try {
+                              const url = await uploadImage(file, schoolInfo?.subdomain || 'school', 'programs');
+                              setProgramForm({ ...programForm, imageUrl: url });
+                            } catch (e) { alert('Upload failed: ' + e.message); }
                           }} className="w-full border border-gray-300 rounded-lg px-3 py-2" />
                           {programForm.imageUrl && <img src={programForm.imageUrl} alt="Preview" className="mt-2 h-20 object-cover rounded-lg" />}
                         </div>
@@ -685,9 +689,10 @@ export default function Dashboard() {
                         <div>
                           <input type="file" accept="image/*" onChange={e=>{
                             const file=e.target.files[0];if(!file)return;
-                            const reader=new FileReader();
-                            reader.onloadend=()=>setStudentForm({...studentForm,imageUrl:reader.result});
-                            reader.readAsDataURL(file);
+                            try {
+                              const url = await uploadImage(file, schoolInfo?.subdomain || 'school', 'students');
+                              setStudentForm({...studentForm, imageUrl: url});
+                            } catch (e) { alert('Upload failed: ' + e.message); }
                           }} className="w-full border border-gray-300 rounded-lg px-3 py-2" />
                           {studentForm.imageUrl&&(
                             <img src={studentForm.imageUrl} alt="Preview" className="mt-2 h-20 w-20 object-cover rounded-full border-2 border-gray-200" />
@@ -917,9 +922,10 @@ export default function Dashboard() {
                                   <span className="block text-xs text-gray-600 mb-1">Upload from device</span>
                                   <input type="file" accept="image/*" onChange={e => {
                                     const file = e.target.files[0]; if (!file) return;
-                                    const reader = new FileReader();
-                                    reader.onloadend = () => updateBanners([...banners, reader.result]);
-                                    reader.readAsDataURL(file);
+                                    try {
+                                      const url = await uploadImage(file, schoolInfo?.subdomain || 'school', 'banners');
+                                      updateBanners([...banners, url]);
+                                    } catch (e) { alert('Upload failed: ' + e.message); }
                                   }} className="w-full border border-gray-300 rounded px-2 py-1 text-sm" />
                                 </label>
                               </div>
