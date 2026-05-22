@@ -13,7 +13,7 @@ const SCHOOLS_FALLBACK = [
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const [schools, setSchools] = useState(SCHOOLS_FALLBACK);
+  const [schools, setSchools] = useState([]);
 
   useEffect(() => {
     fetch(`${API}/school/all`)
