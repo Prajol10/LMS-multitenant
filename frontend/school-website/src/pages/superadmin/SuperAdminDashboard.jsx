@@ -24,7 +24,7 @@ const ImageUpload = ({ label, value, onChange, hint }) => {
           placeholder="https://..." />
       ) : (
         <div>
-          <input type="file" accept="image/*" onChange={e => {
+          <input type="file" accept="image/*" onChange={async e => {
             const file = e.target.files[0]; if (!file) return;
             try {
               const url = await uploadImage(file, form.subdomain || 'school', 'logos');
@@ -356,7 +356,7 @@ export default function SuperAdminDashboard() {
                       {banners.length < 5 && (
                         <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
                           <p className="text-xs text-gray-500 mb-2">Add banner {banners.length + 1} of 5</p>
-                          <input type="file" accept="image/*" onChange={e => {
+                          <input type="file" accept="image/*" onChange={async e => {
                             const file = e.target.files[0]; if (!file) return;
                             try {
                               const url = await uploadImage(file, form.subdomain || 'school', 'banners');

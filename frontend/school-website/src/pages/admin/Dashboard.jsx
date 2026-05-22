@@ -392,7 +392,7 @@ export default function Dashboard() {
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" placeholder="https://..." />
                   ) : (
                     <div>
-                      <input type="file" accept="image/*" onChange={e => {
+                      <input type="file" accept="image/*" onChange={async e => {
                         const file = e.target.files[0]; if (!file) return;
                         try {
                           const url = await uploadImage(file, schoolInfo?.subdomain || 'school', 'gallery');
@@ -468,7 +468,7 @@ export default function Dashboard() {
                           placeholder="https://..." className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
                       ) : (
                         <div>
-                          <input type="file" accept="image/*" onChange={e => {
+                          <input type="file" accept="image/*" onChange={async e => {
                             const file = e.target.files[0]; if (!file) return;
                             try {
                               const url = await uploadImage(file, schoolInfo?.subdomain || 'school', 'leadership');
@@ -575,7 +575,7 @@ export default function Dashboard() {
                           placeholder="https://..." className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
                       ) : (
                         <div>
-                          <input type="file" accept="image/*" onChange={e => {
+                          <input type="file" accept="image/*" onChange={async e => {
                             const file = e.target.files[0]; if (!file) return;
                             try {
                               const url = await uploadImage(file, schoolInfo?.subdomain || 'school', 'programs');
@@ -687,7 +687,7 @@ export default function Dashboard() {
                           placeholder="https://..." className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
                       ):(
                         <div>
-                          <input type="file" accept="image/*" onChange={e=>{
+                          <input type="file" accept="image/*" onChange={async e=>{
                             const file=e.target.files[0];if(!file)return;
                             try {
                               const url = await uploadImage(file, schoolInfo?.subdomain || 'school', 'students');
@@ -920,7 +920,7 @@ export default function Dashboard() {
                               <div className="flex gap-2 mb-2">
                                 <label className="flex-1">
                                   <span className="block text-xs text-gray-600 mb-1">Upload from device</span>
-                                  <input type="file" accept="image/*" onChange={e => {
+                                  <input type="file" accept="image/*" onChange={async e => {
                                     const file = e.target.files[0]; if (!file) return;
                                     try {
                                       const url = await uploadImage(file, schoolInfo?.subdomain || 'school', 'banners');
