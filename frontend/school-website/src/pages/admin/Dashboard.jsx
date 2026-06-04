@@ -67,6 +67,7 @@ export default function Dashboard() {
   const [schoolInfo, setSchoolInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [noticeForm, setNoticeForm] = useState({ title: '', content: '', isImportant: false });
+  const [editingNotice, setEditingNotice] = useState(null);
   const [galleryForm, setGalleryForm] = useState({ imageUrl: '', caption: '', uploadMode: 'url' });
   const [showNoticeForm, setShowNoticeForm] = useState(false);
   const [showGalleryForm, setShowGalleryForm] = useState(false);
@@ -134,6 +135,14 @@ export default function Dashboard() {
     if (res.ok) { showMsg('Notice added!'); setShowNoticeForm(false); setNoticeForm({ title: '', content: '', isImportant: false }); fetchData(); }
   };
 
+  const updateNotice = async (e) => {
+    e.preventDefault();
+    const res = await fetch(`${API}/notice/${editingNotice.id}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(noticeForm)
+    });
+    if (res.ok) { showMsg('Notice updated!'); setEditingNotice(null); setNoticeForm({ title: '', content: '', isImportant: false }); setShowNoticeForm(false); fetchData(); }
+  };
   const deleteNotice = async (id) => {
     if (!confirm('Delete this notice?')) return;
     await fetch(`${API}/notice/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
@@ -325,7 +334,7 @@ export default function Dashboard() {
             </div>
             {showNoticeForm && (
               <div className="bg-white rounded-xl shadow p-6 mb-6">
-                <form onSubmit={addNotice} className="space-y-4">
+                <form onSubmit={editingNotice ? updateNotice : addNotice} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
                     <input value={noticeForm.title} onChange={e => setNoticeForm({ ...noticeForm, title: e.target.value })}
@@ -340,7 +349,7 @@ export default function Dashboard() {
                     <input type="checkbox" checked={noticeForm.isImportant} onChange={e => setNoticeForm({ ...noticeForm, isImportant: e.target.checked })} className="w-4 h-4" />
                     <span className="text-sm font-medium text-gray-700">Mark as Important</span>
                   </label>
-                  <button type="submit" className="bg-[#1B2A4A] text-white px-6 py-2 rounded-lg hover:bg-[#243660] transition">Add Notice</button>
+                  <button type="submit" className="bg-[#1B2A4A] text-white px-6 py-2 rounded-lg hover:bg-[#243660] transition">{editingNotice ? 'Update Notice' : 'Add Notice'}</button>
                 </form>
               </div>
             )}
@@ -358,6 +367,7 @@ export default function Dashboard() {
                       <p className="text-gray-600 text-sm">{notice.content}</p>
                       <p className="text-gray-400 text-xs mt-2">{new Date(notice.createdAt).toLocaleDateString()}</p>
                     </div>
+                    <button onClick={() => { setEditingNotice(notice); setNoticeForm({ title: notice.title, content: notice.content, isImportant: notice.isImportant }); setShowNoticeForm(true); }} className="text-blue-500 hover:text-blue-700 text-sm ml-2">Edit</button>
                     <button onClick={() => archiveItem('notice', notice.id)} className="text-yellow-500 hover:text-yellow-700 text-sm ml-2">Archive</button>
                     <button onClick={() => deleteNotice(notice.id)} className="text-red-400 hover:text-red-600 text-sm ml-2">Delete</button>
                   </div>
