@@ -67,7 +67,7 @@ namespace SchoolWebsite.Controllers
         {
             var tenantId = GetTenantId();
             if (tenantId == null) return Unauthorized();
-            var messages = await _context.ContactMessages.Where(m => m.TenantId == tenantId && !m.IsRead == m.IsRead).OrderByDescending(m => m.CreatedAt).ToListAsync();
+            var messages = await _context.ContactMessages.Where(m => m.TenantId == tenantId).OrderByDescending(m => m.CreatedAt).ToListAsync();
             return Ok(messages);
         }
 
