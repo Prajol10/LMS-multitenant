@@ -6,14 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5071/api';
 
-const CLASS_LEVELS = [
-  'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5',
-  'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10',
-  'Class 11', 'Class 12',
-  'Class 1-5 (Primary)', 'Class 6-8 (Lower Secondary)',
-  'Class 9-10 (Secondary)', 'Class 11-12 (Higher Secondary)',
-  'Class 1-10', 'Class 1-12', 'All Classes'
-];
+
 
 const ImageUpload = ({ label, value, onChange, hint }) => {
   const [mode, setMode] = useState('url');
@@ -558,12 +551,23 @@ export default function Dashboard() {
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" required />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Class / Level</label>
-                      <select value={programForm.level} onChange={e => setProgramForm({ ...programForm, level: e.target.value })}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]">
-                        <option value="">Select class/level</option>
-                        {CLASS_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-                      </select>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Level Type & Value</label>
+                      <div className="flex gap-2">
+                        <select
+                          value={programForm.levelType || ''}
+                          onChange={e => setProgramForm({ ...programForm, levelType: e.target.value, level: e.target.value ? e.target.value + (programForm.levelValue ? ' ' + programForm.levelValue : '') : (programForm.levelValue || '') })}
+                          className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]">
+                          <option value="">Type</option>
+                          <option value="Class">Class</option>
+                          <option value="Institution">Institution</option>
+                          <option value="Other">Other</option>
+                        </select>
+                        <input
+                          value={programForm.levelValue || ''}
+                          onChange={e => setProgramForm({ ...programForm, levelValue: e.target.value, level: (programForm.levelType ? programForm.levelType + ' ' : '') + e.target.value })}
+                          placeholder={programForm.levelType === 'Class' ? 'e.g. 1, 2, 1-5, All' : programForm.levelType === 'Institution' ? 'e.g. Primary, Secondary' : 'e.g. Any value'}
+                          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                      </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
@@ -664,11 +668,22 @@ export default function Dashboard() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Grade / Class</label>
-                      <select value={studentForm.grade} onChange={e => setStudentForm({ ...studentForm, grade: e.target.value })}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]">
-                        <option value="">Select grade</option>
-                        {['Class 1','Class 2','Class 3','Class 4','Class 5','Class 6','Class 7','Class 8','Class 9','Class 10','Class 11','Class 12'].map(g => <option key={g} value={g}>{g}</option>)}
-                      </select>
+                      <div className="flex gap-2">
+                        <select
+                          value={studentForm.gradeType || ''}
+                          onChange={e => setStudentForm({ ...studentForm, gradeType: e.target.value, grade: e.target.value ? e.target.value + (studentForm.gradeValue ? ' ' + studentForm.gradeValue : '') : (studentForm.gradeValue || '') })}
+                          className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]">
+                          <option value="">Type</option>
+                          <option value="Class">Class</option>
+                          <option value="Grade">Grade</option>
+                          <option value="Other">Other</option>
+                        </select>
+                        <input
+                          value={studentForm.gradeValue || ''}
+                          onChange={e => setStudentForm({ ...studentForm, gradeValue: e.target.value, grade: (studentForm.gradeType ? studentForm.gradeType + ' ' : '') + e.target.value })}
+                          placeholder={studentForm.gradeType === 'Class' ? 'e.g. 1, 2, 9-10' : studentForm.gradeType === 'Grade' ? 'e.g. A, B, 10' : 'e.g. Any value'}
+                          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1B2A4A]" />
+                      </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Achievement</label>
